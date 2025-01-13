@@ -1,0 +1,85 @@
+.production-list {
+    max-width: 1920px;
+    margin: 0 auto;
+    padding: 20px;
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 300px;
+        }
+
+        button,
+        .button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+
+            &:hover {
+                background-color: #45a049;
+            }
+        }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .edit-button,
+        .delete-button,
+        .archive-button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .edit-button {
+            background-color: #2196F3;
+        }
+
+        .delete-button {
+            background-color: #f44336;
+        }
+
+        .archive-button {
+            background-color: #ff9800;
+        }
+    }
+}
