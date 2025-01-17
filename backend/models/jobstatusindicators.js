@@ -10,6 +10,18 @@ const jobStatusIndicatorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  defaultForNew :{
+    type: Boolean,
+    default: false,
+  },
+  considerForPreProd: {
+    type: Boolean,
+    default: false,
+  },
+  defaultForAutoArchive: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 module.exports = jobStatusIndicatorSchema;

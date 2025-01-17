@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -5,17 +6,19 @@ import "../../css/StockStatusIndicators/StockStatusIndicatorList.scss";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Components/AuthContext";
 
+const StylishCheckbox = ({ checked }) => (
+  <div className={`stylish-checkbox ${checked ? "checked" : ""}`}>
+    {checked && <span>✓</span>}
+  </div>
+);
+
 const StockStatusIndicatorList = () => {
   const [indicators, setIndicators] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [indicatorToDelete, setIndicatorToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canPerformActions =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canPerformActions = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchIndicators();
@@ -64,6 +67,9 @@ const StockStatusIndicatorList = () => {
           <tr>
             <th>Status</th>
             <th>Color</th>
+            <th>Default for New</th>
+            <th>Consider for Pre-Prod</th>
+            <th>Default Completed</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -76,6 +82,15 @@ const StockStatusIndicatorList = () => {
                   className="color-preview"
                   style={{ backgroundColor: indicator.color }}
                 ></div>
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.defaultForNew} />
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.considerForPreProd} />
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.defaultCompleted} />
               </td>
               <td>
                 {canPerformActions && (

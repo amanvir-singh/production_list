@@ -13,12 +13,15 @@ const MaterialsList = () => {
   const [materialToDelete, setMaterialToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canPerformActions =
+
+  const canAddMaterial =
     user.role === "Reader" ||
     user.role === "Editor" ||
     user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
     user.role === "admin";
+
+  const canPerformActions =
+    user.role === "Editor" || user.role === "Manager" || user.role === "admin";
 
   useEffect(() => {
     fetchMaterials();
@@ -73,7 +76,7 @@ const MaterialsList = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
-        {canPerformActions && (
+        {canAddMaterial && (
           <Link to="/add-material" className="add-button">
             Add Material
           </Link>

@@ -8,15 +8,14 @@ import ErrorModal from "../../Components/ErrorModal";
 const EditJobStatusIndicator = () => {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#000000");
+  const [defaultForNew, setDefaultForNew] = useState(false);
+  const [considerForPreProd, setConsiderForPreProd] = useState(false);
+  const [defaultForAutoArchive, setDefaultForAutoArchive] = useState(false);
   const [backendError, setBackendError] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canEditIndicator =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canEditIndicator = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchIndicator();
@@ -27,9 +26,18 @@ const EditJobStatusIndicator = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}/jobStatusIndicators/${id}`
       );
-      const { name, color } = response.data;
+      const {
+        name,
+        color,
+        defaultForNew,
+        considerForPreProd,
+        defaultForAutoArchive,
+      } = response.data;
       setName(name);
       setColor(color);
+      setDefaultForNew(defaultForNew);
+      setConsiderForPreProd(considerForPreProd);
+      setDefaultForAutoArchive(defaultForAutoArchive);
     } catch (error) {
       console.error("Error fetching job status indicator:", error);
       setBackendError(
@@ -46,6 +54,9 @@ const EditJobStatusIndicator = () => {
         {
           name,
           color,
+          defaultForNew,
+          considerForPreProd,
+          defaultForAutoArchive,
         }
       );
       navigate("/manage/jobStatusIndicatorsList");
@@ -88,6 +99,36 @@ const EditJobStatusIndicator = () => {
                 onChange={(e) => setColor(e.target.value)}
                 required
               />
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={defaultForNew}
+                  onChange={(e) => setDefaultForNew(e.target.checked)}
+                />
+                Default for New
+              </label>
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={considerForPreProd}
+                  onChange={(e) => setConsiderForPreProd(e.target.checked)}
+                />
+                Consider for Pre-Prod
+              </label>
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={defaultForAutoArchive}
+                  onChange={(e) => setDefaultForAutoArchive(e.target.checked)}
+                />
+                Default for Auto Archive
+              </label>
             </div>
             <button type="submit">Update Job Status Indicator</button>
           </form>

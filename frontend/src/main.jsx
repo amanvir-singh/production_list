@@ -1,7 +1,6 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import App from "./App.jsx";
 import Header from "./Components/Header.jsx";
 import { AuthProvider } from "./Components/AuthContext.jsx";
 import "./index.css";
@@ -30,57 +29,91 @@ import AddStockStatusIndicator from "./Pages/StockStatusIndicators/AddStockStatu
 import EditStockStatusIndicator from "./Pages/StockStatusIndicators/EditStockStatusIndicator.jsx";
 import ProductionList from "./Pages/ProductionList/ProductionList.jsx";
 import ProductionListForm from "./Pages/ProductionList/ProductionListForm.jsx";
+import { useNavigate } from "react-router-dom";
+import PreProd from "./Pages/PreProd/PreProd.jsx";
+
+const AppWithEventListener = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleLogout = () => {
+      window.location.reload();
+    };
+
+    const handleLoginSuccess = () => {
+      window.location.reload();
+    };
+
+    window.addEventListener("logout", handleLogout);
+    window.addEventListener("loginSuccess", handleLoginSuccess);
+    return () => {
+      window.removeEventListener("logout", handleLogout);
+      window.removeEventListener("loginSuccess", handleLoginSuccess);
+    };
+  }, [navigate]);
+
+  return (
+    <>
+      <Header />
+      <Routes>
+        <Route path="/" element={<ProductionList />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/manage/suppliersList" element={<SupplierList />} />
+        <Route path="/add-supplier" element={<AddSupplier />} />
+        <Route path="/edit-supplier/:id" element={<EditSupplier />} />
+        <Route path="/manage/finishesList" element={<FinishesList />} />
+        <Route path="/add-finish" element={<AddFinish />} />
+        <Route path="/edit-finish/:id" element={<EditFinish />} />
+        <Route path="/manage/thicknessesList" element={<ThicknessesList />} />
+        <Route path="/add-thickness" element={<AddThickness />} />
+        <Route path="/edit-thickness/:id" element={<EditThickness />} />
+        <Route path="/manage/usersList" element={<UsersList />} />
+        <Route path="/add-user" element={<AddUser />} />
+        <Route path="/edit-user/:id" element={<EditUser />} />
+        <Route path="/manage/materialsList" element={<MaterialsList />} />
+        <Route path="/add-material" element={<AddMaterial />} />
+        <Route path="/edit-material/:id" element={<EditMaterial />} />
+        <Route
+          path="/manage/jobStatusIndicatorsList"
+          element={<JobStatusIndicatorList />}
+        />
+        <Route
+          path="/add-job-status-indicator"
+          element={<AddJobStatusIndicator />}
+        />
+        <Route
+          path="/edit-job-status-indicator/:id"
+          element={<EditJobStatusIndicator />}
+        />
+        <Route
+          path="/manage/stockStatusIndicatorsList"
+          element={<StockStatusIndicatorList />}
+        />
+        <Route
+          path="/add-stock-status-indicator"
+          element={<AddStockStatusIndicator />}
+        />
+        <Route
+          path="/edit-stock-status-indicator/:id"
+          element={<EditStockStatusIndicator />}
+        />
+        <Route path="/add-production-list" element={<ProductionListForm />} />
+        <Route
+          path="/edit-production-list/:id"
+          element={<ProductionListForm />}
+        />
+        <Route path="/preprod" element={<PreProd />} />
+      </Routes>
+    </>
+  );
+};
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
       <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<ProductionList />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/manage/suppliersList" element={<SupplierList />} />
-          <Route path="/add-supplier" element={<AddSupplier />} />
-          <Route path="/edit-supplier/:id" element={<EditSupplier />} />
-          <Route path="/manage/finishesList" element={<FinishesList />} />
-          <Route path="/add-finish" element={<AddFinish />} />
-          <Route path="/edit-finish/:id" element={<EditFinish />} />
-          <Route path="/manage/thicknessesList" element={<ThicknessesList />} />
-          <Route path="/add-thickness" element={<AddThickness />} />
-          <Route path="/edit-thickness/:id" element={<EditThickness />} />
-          <Route path="/manage/usersList" element={<UsersList />} />
-          <Route path="/add-user" element={<AddUser />} />
-          <Route path="/edit-user/:id" element={<EditUser />} />
-          <Route path="/manage/materialsList" element={<MaterialsList />} />
-          <Route path="/add-material" element={<AddMaterial />} />
-          <Route path="/edit-material/:id" element={<EditMaterial />} />
-          <Route
-            path="/manage/jobStatusIndicatorsList"
-            element={<JobStatusIndicatorList />}
-          />
-          <Route
-            path="/add-job-status-indicator"
-            element={<AddJobStatusIndicator />}
-          />
-          <Route
-            path="/edit-job-status-indicator/:id"
-            element={<EditJobStatusIndicator />}
-          />
-          <Route
-            path="/manage/stockStatusIndicatorsList"
-            element={<StockStatusIndicatorList />}
-          />
-          <Route
-            path="/add-stock-status-indicator"
-            element={<AddStockStatusIndicator />}
-          />
-          <Route
-            path="/edit-stock-status-indicator/:id"
-            element={<EditStockStatusIndicator />}
-          />
-          <Route path="/add-production-list" element={<ProductionListForm />} />
-        </Routes>
+        <AppWithEventListener />
       </Router>
     </AuthProvider>
   </StrictMode>

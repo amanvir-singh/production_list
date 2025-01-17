@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -11,11 +12,7 @@ const JobStatusIndicatorList = () => {
   const [indicatorToDelete, setIndicatorToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canPerformActions =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canPerformActions = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchIndicators();
@@ -51,6 +48,12 @@ const JobStatusIndicatorList = () => {
     }
   };
 
+  const StylishCheckbox = ({ checked }) => (
+    <div className={`stylish-checkbox ${checked ? "checked" : ""}`}>
+      {checked && <span>✓</span>}
+    </div>
+  );
+
   return (
     <div className="job-status-indicator-list">
       <h1>Job Status Indicators</h1>
@@ -64,6 +67,9 @@ const JobStatusIndicatorList = () => {
           <tr>
             <th>Status</th>
             <th>Color</th>
+            <th>Default for New</th>
+            <th>Consider for Pre-Prod</th>
+            <th>Default for Auto Archive</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -76,6 +82,15 @@ const JobStatusIndicatorList = () => {
                   className="color-preview"
                   style={{ backgroundColor: indicator.color }}
                 ></div>
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.defaultForNew} />
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.considerForPreProd} />
+              </td>
+              <td>
+                <StylishCheckbox checked={indicator.defaultForAutoArchive} />
               </td>
               <td>
                 {canPerformActions && (

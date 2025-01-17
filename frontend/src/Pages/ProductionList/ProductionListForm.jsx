@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../Components/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../css/Production List/ProductionListForm.scss";
+import "../../css/ProductionList/ProductionListForm.scss";
+import ConfirmationModal from "./ConfirmationModal";
 
 const ProductionListForm = () => {
   const [formData, setFormData] = useState({
@@ -15,10 +16,10 @@ const ProductionListForm = () => {
         quantitySaw: 0,
         quantityCNC: 0,
         isCustom: false,
+        stockStatus: "",
+        jobStatus: "",
       },
     ],
-    stockStatus: "",
-    jobStatus: "",
     priority: 0,
     note: "",
   });
@@ -28,6 +29,8 @@ const ProductionListForm = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { id } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [actionType, setActionType] = useState(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -37,6 +40,30 @@ const ProductionListForm = () => {
       fetchProductionList();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!id && stockStatuses.length > 0 && jobStatuses.length > 0) {
+      const defaultStockStatus =
+        stockStatuses.find((status) => status.defaultForNew)?.name || "";
+      const defaultJobStatus =
+        jobStatuses.find((status) => status.defaultForNew)?.name || "";
+
+      console.log(
+        "Setting default statuses:",
+        defaultStockStatus,
+        defaultJobStatus
+      );
+
+      setFormData((prevData) => ({
+        ...prevData,
+        materials: prevData.materials.map((material) => ({
+          ...material,
+          stockStatus: defaultStockStatus,
+          jobStatus: defaultJobStatus,
+        })),
+      }));
+    }
+  }, [id, stockStatuses, jobStatuses]);
 
   const fetchProductionList = async () => {
     try {
@@ -55,7 +82,6 @@ const ProductionListForm = () => {
         `${import.meta.env.VITE_APP_ROUTE}/materials`
       );
       setMaterials(response.data);
-      console.log(materials);
     } catch (error) {
       console.error("Error fetching materials:", error);
     }
@@ -83,6 +109,22 @@ const ProductionListForm = () => {
     }
   };
 
+  const setDefaultStatuses = () => {
+    const defaultStockStatus =
+      stockStatuses.find((status) => status.defaultForNew)?.name || "";
+    const defaultJobStatus =
+      jobStatuses.find((status) => status.defaultForNew)?.name || "";
+
+    setFormData((prevData) => ({
+      ...prevData,
+      materials: prevData.materials.map((material) => ({
+        ...material,
+        stockStatus: defaultStockStatus,
+        jobStatus: defaultJobStatus,
+      })),
+    }));
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -90,14 +132,28 @@ const ProductionListForm = () => {
   const handleMaterialChange = (index, field, value) => {
     const newMaterials = [...formData.materials];
     newMaterials[index][field] = value;
-    if (field === "isCustom") {
-      newMaterials[index].material = "";
-      newMaterials[index].customMaterial = "";
+    if (field === "customMaterial") {
+      newMaterials[index].material = value ? "" : newMaterials[index].material;
+    }
+    if (field === "jobStatus") {
+      const jobStatusToArchive = jobStatuses.find(
+        (status) => status.name === value && status.defaultForAutoArchive
+      );
+      // if (jobStatusToArchive) {
+      //   alert(
+      //     "This job status will automatically archive the job upon saving."
+      //   );
+      // }
     }
     setFormData({ ...formData, materials: newMaterials });
   };
 
   const addMaterial = () => {
+    const defaultStockStatus =
+      stockStatuses.find((status) => status.defaultForNew)?.name || "";
+    const defaultJobStatus =
+      jobStatuses.find((status) => status.defaultForNew)?.name || "";
+
     setFormData({
       ...formData,
       materials: [
@@ -108,6 +164,8 @@ const ProductionListForm = () => {
           quantitySaw: 0,
           quantityCNC: 0,
           isCustom: false,
+          stockStatus: defaultStockStatus,
+          jobStatus: defaultJobStatus,
         },
       ],
     });
@@ -119,90 +177,164 @@ const ProductionListForm = () => {
     setFormData({ ...formData, materials: newMaterials });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSaveClick = () => {
+    setActionType("save");
+    setIsModalOpen(true);
+  };
+
+  const handleCancelClick = () => {
+    setActionType("cancel");
+    setIsModalOpen(true);
+  };
+
+  const confirmCancelAction = () => {
+    setIsModalOpen(false);
+    setActionType(null);
+    navigate("/");
+  };
+
+  const confirmSaveAction = async () => {
     try {
+      let savedJob;
       if (id) {
-        await axios.put(
+        savedJob = await axios.put(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/${id}`,
           formData
         );
       } else {
-        await axios.post(
+        savedJob = await axios.post(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/add`,
           formData
         );
       }
+
+      const allMaterialsAutoArchive = formData.materials.every((material) => {
+        const jobStatus = jobStatuses.find(
+          (status) => status.name === material.jobStatus
+        );
+        return jobStatus && jobStatus.defaultForAutoArchive;
+      });
+
+      if (allMaterialsAutoArchive) {
+        await axios.patch(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${
+            savedJob.data._id
+          }/archive`
+        );
+      }
+
       navigate("/");
     } catch (error) {
       console.error("Error saving production list:", error);
     }
+    setIsModalOpen(false);
+    setActionType(null);
   };
 
-  const canEditAll =
-    user.role === "Editor" || user.role === "Manager" || user.role === "admin";
-  const isStockManager = user.role === "Inventory Associates";
+  const canEditAll = ["Editor", "Manager", "admin"].includes(user.role);
+  const isStockManager = user.role === "Inventory Associate";
+
+  if (!user) {
+    return (
+      <div className="production-list-form">
+        <h2>Login Required</h2>
+        <div className="login-message">
+          <p>Please log in to add or edit a job.</p>
+          <button onClick={() => navigate("/login")}>Go to Login</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="production-list-form">
       <h2>{id ? "Edit Job" : "Add New Job"}</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="jobName"
-          value={formData.jobName}
-          onChange={handleChange}
-          placeholder="Job Name"
-          required
-        />
-        <input
-          type="text"
-          name="cutlistName"
-          value={formData.cutlistName}
-          onChange={handleChange}
-          placeholder="Cutlist Name"
-          required
-        />
+      <form onSubmit={(e) => e.preventDefault()}>
+        <div className="input-group">
+          <label htmlFor="jobName">Job Name:</label>
+          <input
+            id="jobName"
+            type="text"
+            name="jobName"
+            value={formData.jobName}
+            onChange={handleChange}
+            placeholder="Enter Job Name"
+            required
+            disabled={isStockManager}
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="cutlistName">Cutlist Name:</label>
+          <input
+            id="cutlistName"
+            type="text"
+            name="cutlistName"
+            value={formData.cutlistName}
+            onChange={handleChange}
+            placeholder="Enter Cutlist Name"
+            required
+            disabled={isStockManager}
+          />
+        </div>
         {formData.materials.map((material, index) => (
           <div key={index} className="material-entry">
+            <h3>Material {index + 1}</h3>
             <div className="material-selection">
-              <label>
+              <label className="custom-checkbox">
+                Custom Material
                 <input
                   type="checkbox"
-                  checked={material.isCustom}
-                  onChange={(e) =>
-                    handleMaterialChange(index, "isCustom", e.target.checked)
-                  }
-                />
-                Custom Material
-              </label>
-              {material.isCustom ? (
-                <input
-                  type="text"
-                  value={material.customMaterial}
+                  checked={!!material.customMaterial}
                   onChange={(e) =>
                     handleMaterialChange(
                       index,
                       "customMaterial",
-                      e.target.value
+                      e.target.checked ? " " : ""
                     )
                   }
-                  placeholder="Custom Material"
+                  disabled={isStockManager}
                 />
+                <span className="checkmark"></span>
+              </label>
+              {material.customMaterial ? (
+                <div className="input-group">
+                  <label htmlFor={`customMaterial-${index}`}>
+                    Custom Material:
+                  </label>
+                  <input
+                    id={`customMaterial-${index}`}
+                    type="text"
+                    value={material.customMaterial}
+                    onChange={(e) =>
+                      handleMaterialChange(
+                        index,
+                        "customMaterial",
+                        e.target.value
+                      )
+                    }
+                    placeholder="Enter Custom Material"
+                    disabled={isStockManager}
+                  />
+                </div>
               ) : (
-                <select
-                  value={material.material}
-                  onChange={(e) =>
-                    handleMaterialChange(index, "material", e.target.value)
-                  }
-                >
-                  <option value="">Select Material</option>
-                  {materials.map((m) => (
-                    <option key={m._id} value={m.code}>
-                      {m.code}
-                    </option>
-                  ))}
-                </select>
+                <div className="input-group">
+                  <label htmlFor={`material-${index}`}>Material:</label>
+                  <select
+                    id={`material-${index}`}
+                    value={material.material}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "material", e.target.value)
+                    }
+                    disabled={isStockManager}
+                  >
+                    <option value="">Select Material</option>
+                    {materials.map((m) => (
+                      <option key={m._id} value={m.code}>
+                        {m.code}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
             </div>
             <div className="quantity-inputs">
@@ -218,6 +350,7 @@ const ProductionListForm = () => {
                       parseInt(e.target.value)
                     )
                   }
+                  disabled={isStockManager}
                 />
               </label>
               <label>
@@ -232,81 +365,103 @@ const ProductionListForm = () => {
                       parseInt(e.target.value)
                     )
                   }
+                  disabled={isStockManager}
                 />
               </label>
             </div>
-            <button type="button" onClick={() => removeMaterial(index)}>
+            {(canEditAll || isStockManager) && (
+              <div className="input-group">
+                <label htmlFor={`stockStatus-${index}`}>Stock Status:</label>
+                <select
+                  id={`stockStatus-${index}`}
+                  value={material.stockStatus}
+                  onChange={(e) =>
+                    handleMaterialChange(index, "stockStatus", e.target.value)
+                  }
+                  disabled={!canEditAll && !isStockManager}
+                >
+                  <option value="">Select Stock Status</option>
+                  {stockStatuses.map((status) => (
+                    <option key={status._id} value={status.name}>
+                      {status.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {canEditAll && (
+              <div className="input-group">
+                <label htmlFor={`jobStatus-${index}`}>Job Status:</label>
+                <select
+                  id={`jobStatus-${index}`}
+                  value={material.jobStatus}
+                  onChange={(e) =>
+                    handleMaterialChange(index, "jobStatus", e.target.value)
+                  }
+                  disabled={!canEditAll}
+                >
+                  <option value="">Select Job Status</option>
+                  {jobStatuses.map((status) => (
+                    <option key={status._id} value={status.name}>
+                      {status.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => removeMaterial(index)}
+              disabled={isStockManager}
+            >
               Remove
             </button>
           </div>
         ))}
-        <button type="button" onClick={addMaterial}>
+        <button type="button" onClick={addMaterial} disabled={isStockManager}>
           Add Material
         </button>
-
-        {canEditAll || isStockManager ? (
-          <select
-            name="stockStatus"
-            value={formData.stockStatus}
-            onChange={handleChange}
-            disabled={!canEditAll && !isStockManager}
-          >
-            <option value="">Select Stock Status</option>
-            {stockStatuses.map((status) => (
-              <option key={status._id} value={status.name}>
-                {status.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <></>
-        )}
-
-        {canEditAll ? (
-          <select
-            name="jobStatus"
-            value={formData.jobStatus}
-            onChange={handleChange}
-            disabled={!canEditAll}
-          >
-            <option value="">Select Job Status</option>
-            {jobStatuses.map((status) => (
-              <option key={status._id} value={status.name}>
-                {status.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <></>
-        )}
-        {canEditAll ? (
+        {canEditAll && (
           <div className="priority-input">
-            <label>
-              Priority:
-              <input
-                type="number"
-                name="priority"
-                value={formData.priority}
-                onChange={handleChange}
-                placeholder="Priority"
-                disabled={!canEditAll}
-              />
-            </label>
+            <label htmlFor="priority">Priority:</label>
+            <input
+              id="priority"
+              type="number"
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              placeholder="Enter Priority"
+              disabled={!canEditAll}
+            />
           </div>
-        ) : (
-          <></>
         )}
-        <textarea
-          name="note"
-          value={formData.note}
-          onChange={handleChange}
-          placeholder="Note"
-        />
-
-        <button type="submit">Save</button>
-        <button type="button" onClick={() => navigate("/production-list")}>
+        <div className="input-group">
+          <label htmlFor="note">Note:</label>
+          <textarea
+            id="note"
+            name="note"
+            value={formData.note}
+            onChange={handleChange}
+            placeholder="Enter Note"
+            disabled={isStockManager}
+          />
+        </div>
+        <button type="button" onClick={handleSaveClick} className="form-button">
+          Save
+        </button>
+        <button className="form-button" onClick={handleCancelClick}>
           Cancel
         </button>
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={
+            actionType === "save" ? confirmSaveAction : confirmCancelAction
+          }
+          message={`Are you sure you want to ${
+            actionType === "save" ? "save" : "cancel creating/editing"
+          } this job?`}
+        />
       </form>
     </div>
   );

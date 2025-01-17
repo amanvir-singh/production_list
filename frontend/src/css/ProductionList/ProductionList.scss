@@ -1,5 +1,5 @@
 .production-list {
-    max-width: 1920px;
+    max-width: 2560px;
     margin: 0 auto;
     padding: 20px;
 
@@ -14,12 +14,12 @@
         margin-bottom: 20px;
 
         input {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            width: 300px;
-        }
+                width: 10%;
+                padding: 10px;
+                font-size: 16px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
 
         button,
         .button {
@@ -47,7 +47,9 @@
         td {
             border: 1px solid #ddd;
             padding: 12px;
+            font-size: 20px;
             text-align: left;
+
         }
 
         th {
@@ -55,9 +57,15 @@
             font-weight: bold;
         }
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+                tbody {
+                    tr.cutlist-row {
+                        background-color: #ffffff;
+                    }
+        
+                    tr.cutlist-row:nth-child(even) {
+                        background-color: #e6e6e6;
+                    }
+                }
 
         .edit-button,
         .delete-button,

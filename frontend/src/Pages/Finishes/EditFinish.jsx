@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../css/Finishes/FinishForm.scss";
@@ -12,11 +12,7 @@ const EditFinish = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canEditFinish =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canEditFinish = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchFinish();

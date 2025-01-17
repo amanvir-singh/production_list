@@ -13,6 +13,7 @@ const thicknessesRoutes = require('./routes/thicknesses');
 const jobstatusindicatorsRoutes = require('./routes/jobstatusindicators');
 const stockstatusindicatorsRoutes = require('./routes/stockstatusindicator');
 const productionListRoutes = require('./routes/productionList');
+const preProdRoutes = require('./routes/preprod');
 
 const app = express();
 
@@ -21,7 +22,7 @@ connectDB();
 
 app.use(cors({
     origin: 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
   
@@ -39,6 +40,7 @@ app.use('/thicknesses', thicknessesRoutes);
 app.use('/jobStatusIndicators', jobstatusindicatorsRoutes);
 app.use('/stockStatusIndicators', stockstatusindicatorsRoutes);
 app.use('/productionLists', productionListRoutes);
+app.use('/preprod', preProdRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

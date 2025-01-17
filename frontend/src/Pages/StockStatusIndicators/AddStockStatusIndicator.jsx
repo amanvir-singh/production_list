@@ -8,14 +8,13 @@ import ErrorModal from "../../Components/ErrorModal";
 const AddStockStatusIndicator = () => {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#000000");
+  const [defaultForNew, setDefaultForNew] = useState(false);
+  const [considerForPreProd, setConsiderForPreProd] = useState(false);
+  const [defaultCompleted, setDefaultCompleted] = useState(false);
   const [backendError, setBackendError] = useState("");
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canAddIndicator =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canAddIndicator = user.role === "Editor" || user.role === "admin";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,6 +24,9 @@ const AddStockStatusIndicator = () => {
         {
           name,
           color,
+          defaultForNew,
+          considerForPreProd,
+          defaultCompleted,
         }
       );
       navigate("/manage/stockStatusIndicatorsList");
@@ -67,6 +69,36 @@ const AddStockStatusIndicator = () => {
                 onChange={(e) => setColor(e.target.value)}
                 required
               />
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={defaultForNew}
+                  onChange={(e) => setDefaultForNew(e.target.checked)}
+                />
+                Default for New
+              </label>
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={considerForPreProd}
+                  onChange={(e) => setConsiderForPreProd(e.target.checked)}
+                />
+                Consider for Pre-Prod
+              </label>
+            </div>
+            <div className="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={defaultCompleted}
+                  onChange={(e) => setDefaultCompleted(e.target.checked)}
+                />
+                Default Completed
+              </label>
             </div>
             <button type="submit">Add Stock Status Indicator</button>
           </form>

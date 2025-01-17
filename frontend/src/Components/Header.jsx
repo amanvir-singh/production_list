@@ -5,9 +5,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 
 const Header = () => {
-  const { isLoggedIn, username, logout } = useContext(AuthContext);
+  const { isLoggedIn, username, logout, user } = useContext(AuthContext);
   const [showManageDropdown, setShowManageDropdown] = useState(false);
   const navigate = useNavigate();
+
+  const canAddJob =
+    user.role === "Reader" ||
+    user.role === "Editor" ||
+    user.role === "Manager" ||
+    user.role === "admin";
 
   const handleLogout = () => {
     logout();
@@ -39,9 +45,9 @@ const Header = () => {
               <a href="/">Home</a>
             </li>
             <li>
-              <a href="/3d-view">PreProd</a>
+              <a href="/preprod">PreProd</a>
             </li>
-            {isLoggedIn ? (
+            {isLoggedIn && canAddJob ? (
               <li>
                 <a href="/add-production-list">Add New Job</a>
               </li>
@@ -49,9 +55,6 @@ const Header = () => {
               <></>
             )}
 
-            <li>
-              <a href="/search">Search</a>
-            </li>
             {isLoggedIn ? (
               <li className="manage-dropdown">
                 <a href="#" onClick={toggleManageDropdown}>

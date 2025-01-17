@@ -20,17 +20,17 @@ router.post('/add', async (req, res) => {
 // Read all (non-archived)
 router.get('/', async (req, res) => {
   try {
-    const productionLists = await ProductionList.find({ archived: false })
-      
+    const productionLists = await ProductionList.find({ archived: false });
     res.json(productionLists);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 // Read all archived
 router.get('/archived', async (req, res) => {
   try {
-    const archivedLists = await ProductionList.find({ archived: true }).populate('materials.material');
+    const archivedLists = await ProductionList.find({ archived: true });
     res.json(archivedLists);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -40,7 +40,7 @@ router.get('/archived', async (req, res) => {
 // Read one
 router.get('/:id', async (req, res) => {
   try {
-    const productionList = await ProductionList.findById(req.params.id).populate('materials.material');
+    const productionList = await ProductionList.findById(req.params.id);
     if (!productionList) return res.status(404).json({ message: 'Production List not found' });
     res.json(productionList);
   } catch (error) {
@@ -65,6 +65,22 @@ router.patch('/:id/archive', async (req, res) => {
     const productionList = await ProductionList.findByIdAndUpdate(
       req.params.id,
       { archived: true },
+      { new: true }
+    );
+    if (!productionList) return res.status(404).json({ message: 'Production List not found' });
+    res.json(productionList);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
+// Unarchive
+router.patch('/:id/unarchive', async (req, res) => {
+  try {
+    const productionList = await ProductionList.findByIdAndUpdate(
+      req.params.id,
+      { archived: false },
       { new: true }
     );
     if (!productionList) return res.status(404).json({ message: 'Production List not found' });

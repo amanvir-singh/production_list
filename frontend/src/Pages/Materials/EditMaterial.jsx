@@ -27,7 +27,6 @@ const EditMaterial = () => {
     user.role === "Reader" ||
     user.role === "Editor" ||
     user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
     user.role === "admin";
 
   useEffect(() => {

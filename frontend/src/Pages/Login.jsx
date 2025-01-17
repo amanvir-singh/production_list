@@ -27,6 +27,7 @@ const Login = () => {
         // Store user data or token in local storage or context
         login(response.data.user);
         navigate("/"); // Redirect
+        window.dispatchEvent(new Event("loginSuccess"));
       }
     } catch (error) {
       console.error("Error logging in:", error.response?.data || error.message);

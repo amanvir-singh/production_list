@@ -10,6 +10,18 @@ const stockStatusIndicatorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  defaultForNew :{
+    type: Boolean,
+    default: false,
+  },
+   considerForPreProd: {
+    type: Boolean,
+    default: false,
+  },
+  defaultCompleted: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 module.exports = stockStatusIndicatorSchema;

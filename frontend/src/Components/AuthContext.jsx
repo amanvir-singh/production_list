@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     setIsLoggedIn(false);
     setUsername("");
+    window.dispatchEvent(new Event("logout"));
   };
 
   return (

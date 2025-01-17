@@ -30,11 +30,7 @@ const AddFinish = () => {
     }
   };
 
-  const canAddFinish =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canAddFinish = user.role === "Editor" || user.role === "admin";
 
   return (
     <div>

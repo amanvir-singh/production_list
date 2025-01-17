@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../../css/Finishes/FinishesList.scss";
@@ -11,11 +11,7 @@ const FinishesList = () => {
   const [finishToDelete, setFinishToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canPerformActions =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canPerformActions = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchFinishes();
