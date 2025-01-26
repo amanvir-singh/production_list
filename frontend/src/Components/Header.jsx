@@ -27,7 +27,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header__container">
-        <div className="header__logo">
+        <Link to="/" className="header__logo">
           <img
             src={logo}
             alt="KBZ Development Inc."
@@ -37,7 +37,7 @@ const Header = () => {
             <h1>Production</h1>
             <h2>Manager</h2>
           </div>
-        </div>
+        </Link>
 
         <nav className="header__nav">
           <ul>

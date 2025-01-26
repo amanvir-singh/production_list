@@ -109,7 +109,7 @@ const ProductionListTable = ({
         {lists.map((list, listIndex) => {
           const materials = list.materials.length > 0 ? list.materials : [{}];
           const rowBackgroundColor =
-            listIndex % 2 === 0 ? "#ffffff" : "#f9f9f9";
+            listIndex % 2 === 0 ? "#ffffff" : "#e6e6e6";
           return materials.map((material, materialIndex) => {
             const jobStatusColor = getJobStatusColor(material.jobStatus);
             return (

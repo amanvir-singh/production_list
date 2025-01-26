@@ -15,9 +15,11 @@
     &__logo {
         display: flex;
         align-items: center;
+        text-decoration: none;
+        color: inherit;
 
         &-image {
-            width: 200px;
+            width: 170px;
             height: 50px;
             margin-right: 15px;
         }
