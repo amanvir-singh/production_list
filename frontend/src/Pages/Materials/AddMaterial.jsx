@@ -95,7 +95,7 @@ const AddMaterial = () => {
       const thicknessName =
         thicknesses.find((t) => t._id === thickness)?.name || "";
 
-      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/materials/add`, {
+      const materialData = {
         supplier: supplierName,
         name,
         colorCode,
@@ -104,7 +104,20 @@ const AddMaterial = () => {
         length,
         width,
         code,
+      };
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/materials/add`,
+        materialData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Material: ${code}`,
+        updatedData: materialData,
       });
+
       navigate("/manage/materialsList");
     } catch (error) {
       console.error("Error adding material:", error);

@@ -49,16 +49,34 @@ const EditJobStatusIndicator = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Fetch the original job status indicator data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/jobStatusIndicators/${id}`
+      );
+      const originalJobStatusIndicatorData = originalResponse.data;
+
+      const updatedJobStatusIndicatorData = {
+        name,
+        color,
+        defaultForNew,
+        considerForPreProd,
+        defaultForAutoArchive,
+      };
+
+      // Update the job status indicator
       await axios.put(
         `${import.meta.env.VITE_APP_ROUTE}/jobStatusIndicators/${id}`,
-        {
-          name,
-          color,
-          defaultForNew,
-          considerForPreProd,
-          defaultForAutoArchive,
-        }
+        updatedJobStatusIndicatorData
       );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Job Status Indicator: ${originalJobStatusIndicatorData.name}`,
+        previousData: originalJobStatusIndicatorData,
+        updatedData: updatedJobStatusIndicatorData,
+      });
+
       navigate("/manage/jobStatusIndicatorsList");
     } catch (error) {
       console.error("Error updating job status indicator:", error);

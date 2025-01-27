@@ -21,10 +21,21 @@ const AddThickness = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/thicknesses/add`, {
-        name,
-        code,
+      const thicknessData = { name, code };
+
+      // Add the thickness
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/thicknesses/add`,
+        thicknessData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Thickness: ${name} (${code})`,
+        updatedData: thicknessData,
       });
+
       navigate("/manage/thicknessesList");
     } catch (error) {
       console.error("Error adding thickness:", error);

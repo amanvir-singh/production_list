@@ -16,10 +16,21 @@ const AddFinish = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/finishes/add`, {
-        name,
-        code,
+      const finishData = { name, code };
+
+      // Add the finish
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/finishes/add`,
+        finishData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Finish: ${name} (${code})`,
+        updatedData: finishData,
       });
+
       navigate("/manage/finishesList");
     } catch (error) {
       console.error("Error adding finish:", error);

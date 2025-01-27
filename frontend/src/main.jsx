@@ -31,6 +31,7 @@ import ProductionList from "./Pages/ProductionList/ProductionList.jsx";
 import ProductionListForm from "./Pages/ProductionList/ProductionListForm.jsx";
 import { useNavigate } from "react-router-dom";
 import PreProd from "./Pages/PreProd/PreProd.jsx";
+import LogList from "./Pages/Logs/LogList.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -104,6 +105,7 @@ const AppWithEventListener = () => {
           element={<ProductionListForm />}
         />
         <Route path="/preprod" element={<PreProd />} />
+        <Route path="/manage/logsList" element={<LogList />} />
       </Routes>
     </>
   );

@@ -42,13 +42,23 @@ const StockStatusIndicatorList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the stock status indicator
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/stockStatusIndicators/${
           indicatorToDelete._id
         }`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Stock Status Indicator: ${indicatorToDelete.name}`,
+        previousData: indicatorToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
-      fetchIndicators();
+      fetchIndicators(); // Refresh the list after deletion
     } catch (error) {
       console.error("Error deleting stock status indicator:", error);
     }

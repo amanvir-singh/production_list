@@ -40,10 +40,28 @@ const EditSupplier = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_APP_ROUTE}/suppliers/${id}`, {
-        name,
-        code,
+      const updatedSupplierData = { name, code };
+
+      // Fetch the original supplier data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/suppliers/${id}`
+      );
+      const originalSupplierData = originalResponse.data;
+
+      // Update the supplier
+      await axios.put(
+        `${import.meta.env.VITE_APP_ROUTE}/suppliers/${id}`,
+        updatedSupplierData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Supplier: ${originalSupplierData.name} (${originalSupplierData.code})`,
+        previousData: originalSupplierData,
+        updatedData: updatedSupplierData,
       });
+
       navigate("/manage/suppliersList");
     } catch (error) {
       console.error("Error updating supplier:", error);

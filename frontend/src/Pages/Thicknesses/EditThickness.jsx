@@ -40,10 +40,26 @@ const EditThickness = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Fetch the original thickness data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/thicknesses/${id}`
+      );
+      const originalThicknessData = originalResponse.data;
+
+      // Update the thickness
       await axios.put(`${import.meta.env.VITE_APP_ROUTE}/thicknesses/${id}`, {
         name,
         code,
       });
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Thickness: ${originalThicknessData.name} (${originalThicknessData.code})`,
+        previousData: originalThicknessData,
+        updatedData: { name, code },
+      });
+
       navigate("/manage/thicknessesList");
     } catch (error) {
       console.error("Error updating thickness:", error);

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -73,6 +74,7 @@ const Signup = () => {
     }
 
     try {
+      // Create the user
       const response = await axios.post(
         `${import.meta.env.VITE_APP_ROUTE}/users/add`,
         {
@@ -82,6 +84,13 @@ const Signup = () => {
           role,
         }
       );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: username, // Log the new user's username
+        action: `Signed Up User: ${username} (${role})`,
+        updatedData: { username, email, role }, // Log relevant user data
+      });
 
       console.log("User created successfully");
       navigate("/login");

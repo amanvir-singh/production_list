@@ -35,10 +35,28 @@ const EditFinish = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_APP_ROUTE}/finishes/${id}`, {
-        name,
-        code,
+      const updatedFinishData = { name, code };
+
+      // Fetch the original finish data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/finishes/${id}`
+      );
+      const originalFinishData = originalResponse.data;
+
+      // Update the finish
+      await axios.put(
+        `${import.meta.env.VITE_APP_ROUTE}/finishes/${id}`,
+        updatedFinishData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Finish: ${originalFinishData.code}`,
+        previousData: originalFinishData,
+        updatedData: updatedFinishData,
       });
+
       navigate("/manage/finishesList");
     } catch (error) {
       console.error("Error updating finish:", error);

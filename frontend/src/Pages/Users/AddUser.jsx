@@ -56,12 +56,30 @@ const AddUser = () => {
     }
 
     try {
-      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/users/add`, {
+      const userData = {
         username,
         email,
-        password,
         role,
+      };
+
+      // Add the user
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/users/add`,
+        {
+          username,
+          email,
+          password,
+          role,
+        }
+      );
+
+      // Log the action (without password)
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added User: ${username} (${role})`,
+        updatedData: userData,
       });
+
       navigate("/manage/usersList");
     } catch (error) {
       console.error("Error adding user:", error);

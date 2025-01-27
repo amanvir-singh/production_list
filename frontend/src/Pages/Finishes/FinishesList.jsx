@@ -35,9 +35,19 @@ const FinishesList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the finish
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/finishes/${finishToDelete._id}`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Finish: ${finishToDelete.name} (${finishToDelete.code})`,
+        previousData: finishToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
       fetchFinishes(); // Refresh the list after deletion
     } catch (error) {

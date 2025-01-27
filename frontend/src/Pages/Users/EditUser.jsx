@@ -80,15 +80,35 @@ const EditUser = () => {
     }
 
     try {
+      // Fetch the original user data before updating
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/users/${id}`
+      );
+      const originalUserData = originalResponse.data;
+
       const userData = { username, email, role };
       if (password) {
-        userData.password = password;
+        userData.password = password; // Include password only if it's provided
       }
 
+      // Update the user
       await axios.put(
         `${import.meta.env.VITE_APP_ROUTE}/users/${id}`,
         userData
       );
+
+      // Log the action (without password)
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited User: ${username} (${role})`,
+        previousData: {
+          username: originalUserData.username,
+          email: originalUserData.email,
+          role: originalUserData.role,
+        }, // Log original values
+        updatedData: { username, email, role }, // Log updated data without password
+      });
+
       navigate("/manage/usersList");
     } catch (error) {
       console.error("Error updating user:", error);

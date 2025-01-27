@@ -36,16 +36,29 @@ const UsersList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the user
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/users/${userToDelete._id}`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted User: ${userToDelete.username} (${userToDelete.role})`,
+        previousData: {
+          username: userToDelete.username,
+          email: userToDelete.email,
+          role: userToDelete.role,
+        },
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
       fetchUsers(); // Refresh the list after deletion
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
-
   return (
     <div className="users-list">
       <h1>Users</h1>

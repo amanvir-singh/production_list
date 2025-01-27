@@ -36,9 +36,19 @@ const SupplierList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the supplier
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/suppliers/${supplierToDelete._id}`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Supplier: ${supplierToDelete.name} (${supplierToDelete.code})`,
+        previousData: supplierToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
       fetchSuppliers(); // Refresh the list after deletion
     } catch (error) {

@@ -49,16 +49,34 @@ const EditStockStatusIndicator = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Fetch the original stock status indicator data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/stockStatusIndicators/${id}`
+      );
+      const originalStockStatusIndicatorData = originalResponse.data;
+
+      const updatedStockStatusIndicatorData = {
+        name,
+        color,
+        defaultForNew,
+        considerForPreProd,
+        defaultCompleted,
+      };
+
+      // Update the stock status indicator
       await axios.put(
         `${import.meta.env.VITE_APP_ROUTE}/stockStatusIndicators/${id}`,
-        {
-          name,
-          color,
-          defaultForNew,
-          considerForPreProd,
-          defaultCompleted,
-        }
+        updatedStockStatusIndicatorData
       );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Stock Status Indicator: ${originalStockStatusIndicatorData.name}`,
+        previousData: originalStockStatusIndicatorData,
+        updatedData: updatedStockStatusIndicatorData,
+      });
+
       navigate("/manage/stockStatusIndicatorsList");
     } catch (error) {
       console.error("Error updating stock status indicator:", error);

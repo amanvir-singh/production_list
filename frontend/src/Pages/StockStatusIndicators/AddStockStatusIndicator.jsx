@@ -19,16 +19,27 @@ const AddStockStatusIndicator = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const stockStatusIndicatorData = {
+        name,
+        color,
+        defaultForNew,
+        considerForPreProd,
+        defaultCompleted,
+      };
+
+      // Add the stock status indicator
       await axios.post(
         `${import.meta.env.VITE_APP_ROUTE}/stockStatusIndicators/add`,
-        {
-          name,
-          color,
-          defaultForNew,
-          considerForPreProd,
-          defaultCompleted,
-        }
+        stockStatusIndicatorData
       );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Stock Status Indicator: ${name}`,
+        updatedData: stockStatusIndicatorData,
+      });
+
       navigate("/manage/stockStatusIndicatorsList");
     } catch (error) {
       console.error("Error adding stock status indicator:", error);

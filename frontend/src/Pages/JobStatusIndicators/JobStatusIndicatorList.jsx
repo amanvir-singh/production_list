@@ -36,13 +36,23 @@ const JobStatusIndicatorList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the job status indicator
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/jobStatusIndicators/${
           indicatorToDelete._id
         }`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Job Status Indicator: ${indicatorToDelete.name}`,
+        previousData: indicatorToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
-      fetchIndicators();
+      fetchIndicators(); // Refresh the list after deletion
     } catch (error) {
       console.error("Error deleting job status indicator:", error);
     }

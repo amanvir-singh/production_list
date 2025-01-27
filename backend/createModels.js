@@ -5,10 +5,10 @@ const materialSchema = require('./models/materials');
 const supplierSchema = require('./models/suppliers');
 const finishesSchema = require('./models/finishes');
 const thicknessSchema = require('./models/thicknesses');
-const logSchema = require('./models/logs');
 const jobStatusIndicatorSchema = require("./models/jobstatusindicators");
 const stockStatusIndicatorSchema = require("./models/stockstatusindicator");
 const productionListSchema = require("./models/productionList");
+const logSchema = require('./models/logs');
 
 
 
@@ -20,10 +20,10 @@ function initializeModels() {
       suppliers: { name: 'suppliers', schema: supplierSchema },
       finishes: { name: 'finishes', schema: finishesSchema },
       thicknesses: { name: 'thicknesses', schema: thicknessSchema },
-      logs: { name: 'logs', schema: logSchema },
       jobStatusIndicators : {name: "jobStatusIndicators", schema : jobStatusIndicatorSchema},
       stockStatusIndicators : {name: "stockStatusIndicators", schema : stockStatusIndicatorSchema},
       productionLists : {name: "productionLists", schema : productionListSchema},
+      logs: { name: 'logs', schema: logSchema },
 
     };
   
@@ -43,10 +43,11 @@ function initializeModels() {
       Supplier: models.suppliers.model,
       Finish: models.finishes.model,
       Thickness: models.thicknesses.model,
-      Log: models.logs.model,
       JobStatusIndicator : models.jobStatusIndicators.model,
       StatusStatusIndicator : models.stockStatusIndicators.model,
-      ProductionList : models.productionLists.model
+      ProductionList : models.productionLists.model,
+      Log: models.logs.model,
+      
     };
   }
 
@@ -58,9 +59,9 @@ function initializeModels() {
       supplierSchema,
       finishesSchema,
       thicknessSchema,
-      logSchema,
       jobStatusIndicatorSchema,
       stockStatusIndicatorSchema,
-      productionListSchema
+      productionListSchema,
+      logSchema,
     }
   };

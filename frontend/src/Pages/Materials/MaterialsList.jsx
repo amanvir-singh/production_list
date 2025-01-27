@@ -55,9 +55,19 @@ const MaterialsList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the material
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/materials/${materialToDelete._id}`
       );
+
+      // Log the deletion action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Material: ${materialToDelete.code}`,
+        previousData: materialToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
       fetchMaterials();
     } catch (error) {

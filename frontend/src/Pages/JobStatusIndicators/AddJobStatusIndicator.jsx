@@ -19,16 +19,27 @@ const AddJobStatusIndicator = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const jobStatusIndicatorData = {
+        name,
+        color,
+        defaultForNew,
+        considerForPreProd,
+        defaultForAutoArchive,
+      };
+
+      // Add the job status indicator
       await axios.post(
         `${import.meta.env.VITE_APP_ROUTE}/jobStatusIndicators/add`,
-        {
-          name,
-          color,
-          defaultForNew,
-          considerForPreProd,
-          defaultForAutoArchive,
-        }
+        jobStatusIndicatorData
       );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Job Status Indicator: ${name}`,
+        updatedData: jobStatusIndicatorData,
+      });
+
       navigate("/manage/jobStatusIndicatorsList");
     } catch (error) {
       console.error("Error adding job status indicator:", error);

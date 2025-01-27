@@ -21,10 +21,21 @@ const AddSupplier = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/suppliers/add`, {
-        name,
-        code,
+      const supplierData = { name, code };
+
+      // Add the supplier
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/suppliers/add`,
+        supplierData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Added Supplier: ${name} (${code})`,
+        updatedData: supplierData,
       });
+
       navigate("/manage/suppliersList");
     } catch (error) {
       console.error("Error adding supplier:", error);

@@ -36,9 +36,19 @@ const ThicknessesList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
+      // Delete the thickness
       await axios.delete(
         `${import.meta.env.VITE_APP_ROUTE}/thicknesses/${thicknessToDelete._id}`
       );
+
+      // Log the delete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted Thickness: ${thicknessToDelete.name} (${thicknessToDelete.code})`,
+        previousData: thicknessToDelete,
+        updatedData: null,
+      });
+
       setShowDeleteConfirm(false);
       fetchThicknesses(); // Refresh the list after deletion
     } catch (error) {

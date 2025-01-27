@@ -111,7 +111,7 @@ const EditMaterial = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_APP_ROUTE}/materials/${id}`, {
+      const updatedMaterialData = {
         supplier,
         name,
         colorCode,
@@ -120,7 +120,28 @@ const EditMaterial = () => {
         length,
         width,
         code,
+      };
+
+      // Fetch the original material data
+      const originalResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/materials/${id}`
+      );
+      const originalMaterialData = originalResponse.data;
+
+      // Update the material
+      await axios.put(
+        `${import.meta.env.VITE_APP_ROUTE}/materials/${id}`,
+        updatedMaterialData
+      );
+
+      // Log the action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Edited Material: ${code}`,
+        previousData: originalMaterialData,
+        updatedData: updatedMaterialData,
       });
+
       navigate("/manage/materialsList");
     } catch (error) {
       console.error("Error updating material:", error);

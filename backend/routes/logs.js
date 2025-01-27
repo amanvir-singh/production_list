@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
 
     const logs = await Log.find()
-      .sort({ time: -1 }) // Sort by time, newest first
+      .sort({ loggedAt: -1 }) // Sort by loggedAt, newest first
       .skip(skip)
       .limit(limit);
 
