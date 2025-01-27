@@ -12,11 +12,7 @@ const SupplierList = () => {
   const [supplierToDelete, setSupplierToDelete] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const canPerformActions =
-    user.role === "Editor" ||
-    user.role === "Manager" ||
-    user.role === "Inventory Associate" ||
-    user.role === "admin";
+  const canPerformActions = user.role === "Editor" || user.role === "admin";
 
   useEffect(() => {
     fetchSuppliers();

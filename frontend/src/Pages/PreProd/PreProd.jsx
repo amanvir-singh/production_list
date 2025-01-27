@@ -1,8 +1,9 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import "../../css/PreProd/PreProd.scss";
 import ConfirmationModal from "./ConfirmationModal";
 import { AuthContext } from "../../Components/AuthContext";
+import FilterModal from "../ProductionList/FilterModal";
 
 const PreProd = () => {
   const [preprodData, setPreprodData] = useState([]);
@@ -12,6 +13,20 @@ const PreProd = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const { user } = useContext(AuthContext);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    materials: [],
+    jobStatuses: [],
+    stockStatuses: [],
+    priorities: [],
+  });
+  const [availableFilters, setAvailableFilters] = useState({
+    materials: [],
+    jobStatuses: [],
+    stockStatuses: [],
+    priorities: [],
+  });
+  const printRef = useRef();
 
   const canPerformActions =
     user.role === "Editor" ||
@@ -29,14 +44,23 @@ const PreProd = () => {
     }
   }, [stockStatuses, jobStatuses]);
 
-  const filteredPreprodData = preprodData.filter((item) =>
-    item.cutlists.some(
-      (cl) =>
-        item.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cl.stockStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cl.jobStatus.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredPreprodData = preprodData.filter(
+    (item) =>
+      (filters.materials.length === 0 ||
+        filters.materials.includes(item.material)) &&
+      item.cutlists.some(
+        (cl) =>
+          (filters.jobStatuses.length === 0 ||
+            filters.jobStatuses.includes(cl.jobStatus)) &&
+          (filters.stockStatuses.length === 0 ||
+            filters.stockStatuses.includes(cl.stockStatus)) &&
+          (filters.priorities.length === 0 ||
+            filters.priorities.includes(cl.priority)) &&
+          (item.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cl.stockStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cl.jobStatus.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
   );
 
   const fetchStockStatuses = async () => {
@@ -80,9 +104,49 @@ const PreProd = () => {
 
       const sortedData = sortAndGroupPreprodData(response.data);
       setPreprodData(sortedData);
+
+      setAvailableFilters({
+        materials: [...new Set(sortedData.map((item) => item.material))],
+        jobStatuses: [
+          ...new Set(
+            sortedData.flatMap((item) =>
+              item.cutlists.map((cl) => cl.jobStatus)
+            )
+          ),
+        ],
+        stockStatuses: [
+          ...new Set(
+            sortedData.flatMap((item) =>
+              item.cutlists.map((cl) => cl.stockStatus)
+            )
+          ),
+        ],
+        priorities: [
+          ...new Set(
+            sortedData.flatMap((item) => item.cutlists.map((cl) => cl.priority))
+          ),
+        ],
+      });
     } catch (error) {
       console.error("Error fetching preprod data:", error);
     }
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      materials: [],
+      jobStatuses: [],
+      stockStatuses: [],
+      priorities: [],
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const sortAndGroupPreprodData = (data) => {
@@ -180,7 +244,10 @@ const PreProd = () => {
   };
 
   return (
-    <div className="preprod-list">
+    <div className="preprod-list" ref={printRef}>
+      <div className="print-header">
+        {user && <p>Printed by: {user.username}</p>}
+      </div>
       <h2>Pre-Production Material Preparation</h2>
       <div className="controls">
         <input
@@ -189,6 +256,20 @@ const PreProd = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <button
+          className="btn-filters"
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          Filters
+        </button>
+        {Object.values(filters).some((f) => f.length > 0) && (
+          <button className="btn-clear-filters" onClick={clearFilters}>
+            Clear Filters
+          </button>
+        )}
+        <button className="btn-print" onClick={handlePrint}>
+          Print
+        </button>
       </div>
       <table>
         <thead>
@@ -254,6 +335,15 @@ const PreProd = () => {
         onClose={() => setIsModalOpen(false)}
         onConfirm={confirmMarkComplete}
         item={selectedItem}
+      />
+
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={handleFilterChange}
+        availableFilters={availableFilters}
+        currentFilters={filters}
+        ParentFunction={"Filter Pre-Production List"}
       />
     </div>
   );
