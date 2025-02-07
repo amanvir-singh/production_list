@@ -81,4 +81,39 @@ router.post('/complete', async (req, res) => {
   }
 });
 
+router.post('/partial-complete', async (req, res) => {
+  try {
+    const { materialName, cutlistId, completedStatus, updatedNote } = req.body;
+
+    const productionList = await ProductionList.findById(cutlistId);
+
+    if (!productionList) {
+      return res.status(404).json({ message: 'Production list not found' });
+    }
+
+    const material = productionList.materials.find(m => 
+      m.material === materialName || m.customMaterial === materialName
+    );
+
+    if (!material) {
+      return res.status(404).json({ message: 'Material not found in the production list' });
+    }
+
+    material.stockStatus = completedStatus;
+    
+    // Concatenate note with existing note, differentiating with space
+    productionList.note = productionList.note 
+      ? `${productionList.note} + ${updatedNote}` 
+      : updatedNote;
+
+    await productionList.save();
+
+    res.status(200).json({ message: 'Material marked as partially complete' });
+  } catch (error) {
+    console.error('Error marking material as partially complete:', error);
+    res.status(500).json({ message: 'An error occurred while marking the material as partially complete' });
+  }
+});
+
+
 module.exports = router;

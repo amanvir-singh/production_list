@@ -42,7 +42,12 @@ const MaterialsList = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}/materials`
       );
-      setMaterials(response.data);
+      // Sort the materials based on the alphanumeric order of the code
+      const sortedMaterials = response.data.sort((a, b) => {
+        return a.code.localeCompare(b.code, undefined, { numeric: true });
+      });
+
+      setMaterials(sortedMaterials);
     } catch (error) {
       console.error("Error fetching materials:", error);
     }

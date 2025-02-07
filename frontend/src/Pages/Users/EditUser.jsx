@@ -158,6 +158,7 @@ const EditUser = () => {
               onChange={(e) => setRole(e.target.value)}
               required
             >
+              <option value="Not Assigned">Not Assigned</option>
               <option value="Reader">Reader</option>
               <option value="Inventory Associate">Inventory Associate</option>
               <option value="Editor">Editor</option>

@@ -128,21 +128,75 @@ const ProductionList = () => {
   const confirmAction = async () => {
     try {
       if (actionType === "delete") {
+        // Fetch the original job data
+        const originalResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const originalJobData = originalResponse.data;
+
         await axios.delete(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
         );
+
+        // Log the delete action
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Deleted Cutlist: ${originalJobData.cutlistName}`,
+          previousData: originalJobData,
+          updatedData: null,
+        });
       } else if (actionType === "archive") {
+        // Fetch the original job data
+        const originalResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const originalJobData = originalResponse.data;
+
         await axios.patch(
           `${
             import.meta.env.VITE_APP_ROUTE
           }/productionLists/${selectedId}/archive`
         );
+
+        // Fetch the updated job data
+        const updatedResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const updatedJobData = updatedResponse.data;
+
+        // Log the archive action
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Archived Cutlist: ${originalJobData.cutlistName}`,
+          previousData: originalJobData,
+          updatedData: updatedJobData,
+        });
       } else if (actionType === "unarchive") {
+        // Fetch the original job data
+        const originalResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const originalJobData = originalResponse.data;
+
         await axios.patch(
           `${
             import.meta.env.VITE_APP_ROUTE
           }/productionLists/${selectedId}/unarchive`
         );
+
+        // Fetch the updated job data
+        const updatedResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const updatedJobData = updatedResponse.data;
+
+        // Log the unarchive action
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Unrchived Cutlist: ${originalJobData.cutlistName}`,
+          previousData: originalJobData,
+          updatedData: updatedJobData,
+        });
       } else if (actionType === "archiveOlder") {
         const days = prompt("Archive jobs older than how many days?");
         if (days) {
@@ -151,7 +205,16 @@ const ProductionList = () => {
             { days }
           );
         }
+
+        // Log the archive older jobs action
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Archived Jobs Older than: ${days} days`,
+          previousData: null,
+          updatedData: null,
+        });
       }
+
       fetchProductionLists();
     } catch (error) {
       console.error(`Error during ${actionType} action:`, error);
@@ -166,9 +229,10 @@ const ProductionList = () => {
   const filteredLists = productionLists.filter((list) => {
     const matchesSearch =
       list.materials.some((material) =>
-        Object.values(material).some((val) =>
-          val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        (material.material || material.customMaterial || "")
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
       ) ||
       list.jobName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       list.cutlistName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -176,7 +240,11 @@ const ProductionList = () => {
 
     const matchesFilters =
       (filters.materials.length === 0 ||
-        list.materials.some((m) => filters.materials.includes(m.material))) &&
+        list.materials.some(
+          (m) =>
+            filters.materials.includes(m.material) ||
+            filters.materials.includes(m.customMaterial)
+        )) &&
       (filters.jobStatuses.length === 0 ||
         list.materials.some((m) =>
           filters.jobStatuses.includes(m.jobStatus)
@@ -259,6 +327,7 @@ const ProductionList = () => {
         onUnarchive={handleUnarchive}
         userRole={user.role}
         showArchived={showArchived}
+        searchTerm={searchTerm}
       />
 
       {/* Confirmation Modal */}

@@ -20,11 +20,38 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-app.use(cors({
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// app.use(cors({
+//     origin: '0.0.0.0',
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://productionmanager.local:8080', // Your custom domain
+      'http://192.168.78.78:8080',          // Backend IP address (if needed)
+      'http://localhost:5173'               // Localhost for development
+    ];
+
+    // Allow requests with no origin (e.g., mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+
+    // Otherwise, block the request
+    callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
   
 
 // Middleware
@@ -42,9 +69,11 @@ app.use('/stockStatusIndicators', stockstatusindicatorsRoutes);
 app.use('/productionLists', productionListRoutes);
 app.use('/preprod', preProdRoutes);
 
+// const PORT = process.env.PORT || 3001;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
-
-
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));

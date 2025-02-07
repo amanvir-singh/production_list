@@ -1,0 +1,111 @@
+.note-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Slightly darker background for better focus */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    &-content {
+        background-color: white;
+        padding: 40px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        /* A deeper shadow for depth */
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow: hidden;
+
+        h2 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 20px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+            &:focus {
+                border-color: #4CAF50;
+                box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+                outline: none;
+            }
+
+            &::placeholder {
+                color: #aaa;
+                font-style: italic;
+            }
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            /* Space between buttons */
+            gap: 10px;
+
+            button {
+                padding: 14px 28px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                width: 48%;
+                /* Ensure buttons are not too wide */
+
+                &:first-child {
+                    background-color: #f44336;
+                    color: white;
+
+                    &:hover {
+                        background-color: #d32f2f;
+                        transform: translateY(-2px);
+                        /* Slight hover effect */
+                    }
+
+                    &:active {
+                        background-color: #c62828;
+                        transform: translateY(1px);
+                    }
+                }
+
+                &:last-child {
+                    background-color: #4CAF50;
+                    color: white;
+
+                    &:hover {
+                        background-color: #45a049;
+                        transform: translateY(-2px);
+                        /* Slight hover effect */
+                    }
+
+                    &:active {
+                        background-color: #388e3c;
+                        transform: translateY(1px);
+                    }
+                }
+            }
+        }
+    }
+}

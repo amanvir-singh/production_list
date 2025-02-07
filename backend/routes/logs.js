@@ -42,6 +42,53 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Flatten object and join key-value pairs into a string
+const flattenObject = (obj) => {
+  let result = [];
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+      if (typeof value === 'object' && value !== null) {
+        result.push(flattenObject(value)); // Recursively flatten nested objects
+      } else {
+        result.push(`${key}: ${value}`);
+      }
+    }
+  }
+
+  return result.join(' '); // Combine flattened key-value pairs into one string
+};
+
+router.get('/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.term;
+
+    // Fetch logs and flatten the previousData and updatedData before searching
+    const logs = await Log.find({}).sort({ loggedAt: -1 });
+
+    const filteredLogs = logs.filter((log) => {
+      const flattenedPreviousData = flattenObject(log.previousData || {});
+      const flattenedUpdatedData = flattenObject(log.updatedData || {});
+
+      return (
+        log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        flattenedPreviousData.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        flattenedUpdatedData.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+
+    res.json({
+      logs: filteredLogs,
+      totalLogs: filteredLogs.length
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 // Read one
 router.get('/:id', async (req, res) => {
   try {

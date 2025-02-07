@@ -89,7 +89,7 @@
         th,
         td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 2px;
             font-size: 18px;
             text-align: left;
         }
@@ -100,27 +100,37 @@
         }
 
                  tr {
-                     background-color: #ffffff;
+                     background-color: #e6f7f3;
                  }
         
                  tr.even-material {
-                     background-color: #e6e6e6;
+                     background-color: #f9f5ff;
                  }
 
-        .complete-button {
-            padding: 10px 15px;
-            margin-right: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            background-color: #4CAF50;
-            font-size: 16px;
-            font-weight: bold;
-
-            &:hover {
-                background-color: #45a049;
-            }
-        }
+                .complete-button,
+                .partial-complete-button {
+                    padding: 10px 15px;
+                    margin-right: 5px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    color: white;
+                    font-size: 16px;
+                    font-weight: bold;
+                    transition: background-color 0.3s ease;
+        
+                    &:hover {
+                        opacity: 0.8;
+                    }
+                }
+        
+                .complete-button {
+                    background-color: #4CAF50;
+                }
+        
+                .partial-complete-button {
+                    background-color: #FFA500;
+                }
+                
     }
 }

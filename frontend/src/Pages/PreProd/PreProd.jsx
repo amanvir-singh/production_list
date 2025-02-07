@@ -4,6 +4,18 @@ import "../../css/PreProd/PreProd.scss";
 import ConfirmationModal from "./ConfirmationModal";
 import { AuthContext } from "../../Components/AuthContext";
 import FilterModal from "../ProductionList/FilterModal";
+import NoteModal from "./NoteModal";
+
+const highlightText = (text, highlight) => {
+  if (!highlight.trim()) {
+    return text;
+  }
+  const regex = new RegExp(`(${highlight})`, "gi");
+  const parts = String(text).split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>
+  );
+};
 
 const PreProd = () => {
   const [preprodData, setPreprodData] = useState([]);
@@ -14,6 +26,8 @@ const PreProd = () => {
   const { user } = useContext(AuthContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [partialNote, setPartialNote] = useState("");
   const [filters, setFilters] = useState({
     materials: [],
     jobStatuses: [],
@@ -162,9 +176,8 @@ const PreProd = () => {
 
     // Sort and flatten the grouped data
     return Object.entries(groupedByMaterial)
-      .map(([material, items]) => ({
-        material,
-        cutlists: items.map((item) => ({
+      .map(([material, items]) => {
+        const cutlists = items.map((item) => ({
           name: item.cutlistName,
           quantity: item.quantitySaw + item.quantityCNC,
           stockStatus: item.stockStatus,
@@ -173,29 +186,30 @@ const PreProd = () => {
           jobName: item.jobName,
           id: item._id,
           createdAt: item.createdAt,
-        })),
-        totalQuantity: items.reduce(
-          (sum, item) => sum + item.quantitySaw + item.quantityCNC,
-          0
-        ),
-        highestPriority: items.reduce((highest, item) => {
-          if (item.priority === 0) return highest;
-          if (highest === 0 || item.priority < highest) return item.priority;
-          return highest;
-        }, 0),
-        oldestCreatedAt: new Date(
-          Math.min(...items.map((item) => new Date(item.createdAt)))
-        ),
-      }))
+        }));
+
+        // Sort the cutlists by priority in descending order
+        cutlists.sort((a, b) => b.priority - a.priority);
+
+        return {
+          material,
+          cutlists,
+          totalQuantity: items.reduce(
+            (sum, item) => sum + item.quantitySaw + item.quantityCNC,
+            0
+          ),
+          highestPriority: Math.max(...items.map((item) => item.priority)),
+          oldestCreatedAt: new Date(
+            Math.min(...items.map((item) => new Date(item.createdAt)))
+          ),
+        };
+      })
       .sort((a, b) => {
-        // First, sort by non-zero priority
-        if (a.highestPriority !== 0 && b.highestPriority !== 0) {
-          return a.highestPriority - b.highestPriority;
+        // Sort materials by highest priority (higher number means higher priority)
+        if (a.highestPriority !== b.highestPriority) {
+          return b.highestPriority - a.highestPriority;
         }
-        // If one has a non-zero priority and the other doesn't, non-zero comes first
-        if (a.highestPriority !== 0) return -1;
-        if (b.highestPriority !== 0) return 1;
-        // If both have zero priority, sort by oldest createdAt
+        // If priorities are equal, sort by oldest createdAt
         return a.oldestCreatedAt - b.oldestCreatedAt;
       });
   };
@@ -218,6 +232,53 @@ const PreProd = () => {
     setIsModalOpen(true);
   };
 
+  const handleMarkPartialComplete = (material, cutlist) => {
+    const completedStatus = stockStatuses.find(
+      (status) => status.defaultCompleted
+    );
+    if (!completedStatus) {
+      alert(
+        "No default completed status found. Please set a default completed status."
+      );
+      return;
+    }
+    setSelectedItem({
+      material,
+      cutlist,
+      completedStatus: completedStatus.name,
+    });
+    setIsNoteModalOpen(true);
+  };
+
+  const confirmMarkPartialComplete = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/preprod/partial-complete`,
+        {
+          materialName: selectedItem.material.material,
+          cutlistId: selectedItem.cutlist.id,
+          completedStatus: selectedItem.completedStatus,
+          updatedNote: partialNote,
+        }
+      );
+
+      // Log the MarkComplete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Marked Material: "${selectedItem.material.material}" (Qty: ${selectedItem.cutlist.quantity}) PARTIALLY prepared for: Cutlist: "${selectedItem.cutlist.name}"`,
+        previousData: null,
+        updatedData: null,
+      });
+
+      fetchPreprodData();
+      setIsNoteModalOpen(false);
+      setPartialNote(""); // Reset note
+    } catch (error) {
+      console.error("Error marking as partial complete:", error);
+      alert("An error occurred while marking the item as partially complete.");
+    }
+  };
+
   const confirmMarkComplete = async () => {
     try {
       await axios.post(`${import.meta.env.VITE_APP_ROUTE}/preprod/complete`, {
@@ -225,6 +286,15 @@ const PreProd = () => {
         cutlistId: selectedItem.cutlist.id,
         completedStatus: selectedItem.completedStatus,
       });
+
+      // Log the MarkComplete action
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Marked Material: "${selectedItem.material.material}" (Qty: ${selectedItem.cutlist.quantity}) prepared for: Cutlist: "${selectedItem.cutlist.name}"`,
+        previousData: null,
+        updatedData: null,
+      });
+
       fetchPreprodData();
       setIsModalOpen(false);
     } catch (error) {
@@ -288,38 +358,66 @@ const PreProd = () => {
           {filteredPreprodData.map((item, materialIndex) =>
             item.cutlists.map((cl, cutlistIndex) => (
               <tr
-                key={`${item.material}-${cl.id}`}
+                key={`${item.material}-${cl.id}-${cutlistIndex}`}
                 className={materialIndex % 2 === 0 ? "" : "even-material"}
               >
                 {cutlistIndex === 0 && (
-                  <td rowSpan={item.cutlists.length}>{item.material}</td>
+                  <td rowSpan={item.cutlists.length}>
+                    {highlightText(item.material, searchTerm)}
+                  </td>
                 )}
-                <td>{cl.name}</td>
-                <td>{cl.quantity}</td>
                 <td
                   style={{
                     backgroundColor: getStockStatusColor(cl.stockStatus),
                   }}
                 >
-                  {cl.stockStatus}
+                  {highlightText(cl.name, searchTerm)}
+                </td>
+                <td
+                  style={{
+                    backgroundColor: getStockStatusColor(cl.stockStatus),
+                  }}
+                >
+                  {cl.quantity}
+                </td>
+                <td
+                  style={{
+                    backgroundColor: getStockStatusColor(cl.stockStatus),
+                  }}
+                >
+                  {highlightText(cl.stockStatus, searchTerm)}
                 </td>
                 <td
                   style={{ backgroundColor: getJobStatusColor(cl.jobStatus) }}
                 >
-                  {cl.jobStatus}
+                  {highlightText(cl.jobStatus, searchTerm)}
                 </td>
-                <td>{cl.priority}</td>
+                <td
+                  style={{
+                    backgroundColor: getStockStatusColor(cl.stockStatus),
+                  }}
+                >
+                  {cl.priority}
+                </td>
                 {cutlistIndex === 0 && (
                   <td rowSpan={item.cutlists.length}>{item.totalQuantity}</td>
                 )}
                 <td>
                   {canPerformActions ? (
-                    <button
-                      className="complete-button"
-                      onClick={() => handleMarkComplete(item, cl)}
-                    >
-                      Mark as Complete
-                    </button>
+                    <>
+                      <button
+                        className="complete-button"
+                        onClick={() => handleMarkComplete(item, cl)}
+                      >
+                        Mark as Complete
+                      </button>
+                      <button
+                        className="partial-complete-button"
+                        onClick={() => handleMarkPartialComplete(item, cl)}
+                      >
+                        Mark as Partial Complete
+                      </button>
+                    </>
                   ) : (
                     <></>
                   )}
@@ -344,6 +442,14 @@ const PreProd = () => {
         availableFilters={availableFilters}
         currentFilters={filters}
         ParentFunction={"Filter Pre-Production List"}
+      />
+
+      <NoteModal
+        isOpen={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        onConfirm={confirmMarkPartialComplete}
+        note={partialNote}
+        setNote={setPartialNote}
       />
     </div>
   );

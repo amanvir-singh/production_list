@@ -11,7 +11,7 @@ const AddUser = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("Reader");
+  const [role, setRole] = useState("Not Assigned");
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const canAddUser = user.role === "admin";
@@ -153,6 +153,7 @@ const AddUser = () => {
               onChange={(e) => setRole(e.target.value)}
               required
             >
+              <option value="Not Assigned">Not Assigned</option>
               <option value="Reader">Reader</option>
               <option value="Inventory Associate">Inventory Associate</option>
               <option value="Editor">Editor</option>

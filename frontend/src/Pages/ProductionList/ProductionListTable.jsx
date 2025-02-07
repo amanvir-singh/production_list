@@ -2,8 +2,20 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const highlightText = (text, highlight) => {
+  if (!highlight.trim()) {
+    return text;
+  }
+  const regex = new RegExp(`(${highlight})`, "gi");
+  const parts = String(text).split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>
+  );
+};
+
 const ProductionListTable = ({
   lists,
+  searchTerm = "",
   onDelete,
   onArchive,
   onUnarchive,
@@ -109,7 +121,7 @@ const ProductionListTable = ({
         {lists.map((list, listIndex) => {
           const materials = list.materials.length > 0 ? list.materials : [{}];
           const rowBackgroundColor =
-            listIndex % 2 === 0 ? "#ffffff" : "#e6e6e6";
+            listIndex % 2 === 0 ? "#e6f7f3" : "#f9f5ff";
           return materials.map((material, materialIndex) => {
             const jobStatusColor = getJobStatusColor(material.jobStatus);
             return (
@@ -122,15 +134,18 @@ const ProductionListTable = ({
                 {materialIndex === 0 && (
                   <>
                     <td rowSpan={Math.max(1, list.materials.length)}>
-                      {list.cutlistName}
+                      {highlightText(list.cutlistName, searchTerm)}
                     </td>
                     <td rowSpan={Math.max(1, list.materials.length)}>
-                      {list.jobName}
+                      {highlightText(list.jobName, searchTerm)}
                     </td>
                   </>
                 )}
                 <td style={{ backgroundColor: jobStatusColor }}>
-                  {material.material || material.customMaterial || ""}
+                  {highlightText(
+                    material.material || material.customMaterial || "",
+                    searchTerm
+                  )}
                 </td>
                 <td style={{ backgroundColor: jobStatusColor }}>
                   {material.quantitySaw || ""}
@@ -148,18 +163,21 @@ const ProductionListTable = ({
                     backgroundColor: getStockStatusColor(material.stockStatus),
                   }}
                 >
-                  {material.stockStatus || ""}
+                  {highlightText(material.stockStatus || "", searchTerm)}
                 </td>
                 <td style={{ backgroundColor: jobStatusColor }}>
-                  {material.jobStatus || ""}
+                  {highlightText(material.jobStatus || "", searchTerm)}
                 </td>
                 {materialIndex === 0 && (
                   <>
                     <td rowSpan={Math.max(1, list.materials.length)}>
                       {list.priority}
                     </td>
-                    <td rowSpan={Math.max(1, list.materials.length)}>
-                      {list.note}
+                    <td
+                      className="notes-column"
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
+                      {highlightText(list.note, searchTerm)}
                     </td>
                     <td rowSpan={Math.max(1, list.materials.length)}>
                       {new Date(list.createdAt).toLocaleDateString()}

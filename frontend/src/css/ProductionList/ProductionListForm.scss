@@ -22,14 +22,14 @@
         flex-direction: column;
 
         .input-group {
-                margin-bottom: 15px;
-        
-                label {
-                    display: block;
-                    margin-bottom: 5px;
-                    font-weight: bold;
-                }
+            margin-bottom: 15px;
+
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
             }
+        }
 
         input,
         select,
@@ -46,85 +46,93 @@
         .material-entry {
             border: 1px solid #ddd;
             border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
 
             .material-selection {
                 display: flex;
                 align-items: center;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
 
                 label {
-                    margin-right: 10px;
+                    margin-right: 15px;
                 }
 
                 input[type="checkbox"] {
-                    margin-right: 5px;
+                    margin-right: 10px;
                 }
 
-                select,
-                input[type="text"] {
-                    flex: 1;
-                }
+                                 .react-select__control {
+                                     flex: 1;
+                                     min-width: 300px;
+                                     /* Increase width */
+                                     margin-right: 15px;
+                                 }
+                
+                                 .input-group {
+                                     display: flex;
+                                     flex-direction: column;
+                                     width: 100%;
+                                 }
+                .custom-checkbox {
+                    display: inline-block;
+                    position: relative;
+                    padding-left: 35px;
+                    margin-right: 15px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    user-select: none;
 
-                                .custom-checkbox {
-                                    display: inline-block;
-                                    position: relative;
-                                    padding-left: 35px;
-                                    margin-right: 15px;
-                                    cursor: pointer;
-                                    font-size: 16px;
-                                    user-select: none;
-                
-                                    input {
-                                        position: absolute;
-                                        opacity: 0;
-                                        cursor: pointer;
-                                        height: 0;
-                                        width: 0;
-                                    }
-                
-                                    .checkmark {
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        height: 25px;
-                                        width: 25px;
-                                        background-color: #eee;
-                                        border-radius: 4px;
-                                        transition: all 0.3s ease;
-                
-                                        &:after {
-                                            content: "";
-                                            position: absolute;
-                                            display: none;
-                                            left: 9px;
-                                            top: 5px;
-                                            width: 5px;
-                                            height: 10px;
-                                            border: solid white;
-                                            border-width: 0 3px 3px 0;
-                                            transform: rotate(45deg);
-                                        }
-                                    }
-                
-                                    &:hover input~.checkmark {
-                                        background-color: #ccc;
-                                    }
-                
-                                    input:checked~.checkmark {
-                                        background-color: #2196F3;
-                                    }
-                
-                                    input:checked~.checkmark:after {
-                                        display: block;
-                                    }
-                                }
+                    input {
+                        position: absolute;
+                        opacity: 0;
+                        cursor: pointer;
+                        height: 0;
+                        width: 0;
+                    }
+
+                    .checkmark {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        height: 25px;
+                        width: 25px;
+                        background-color: #eee;
+                        border-radius: 4px;
+                        transition: all 0.3s ease;
+
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            display: none;
+                            left: 9px;
+                            top: 5px;
+                            width: 5px;
+                            height: 10px;
+                            border: solid white;
+                            border-width: 0 3px 3px 0;
+                            transform: rotate(45deg);
+                        }
+                    }
+
+                    &:hover input~.checkmark {
+                        background-color: #ccc;
+                    }
+
+                    input:checked~.checkmark {
+                        background-color: #2196F3;
+                    }
+
+                    input:checked~.checkmark:after {
+                        display: block;
+                    }
+                }
             }
 
             .quantity-inputs {
                 display: flex;
                 justify-content: space-between;
+                margin-bottom: 15px;
 
                 label {
                     display: flex;
@@ -148,7 +156,7 @@
             }
 
             button {
-                margin-top: 10px;
+                margin-top: 15px;
                 padding: 5px 10px;
                 background-color: #f44336;
                 color: white;
@@ -163,8 +171,8 @@
 
             label {
                 display: block;
-                    margin-bottom: 5px;
-                    font-weight: bold;
+                margin-bottom: 5px;
+                font-weight: bold;
 
                 input {
                     margin-left: 10px;
@@ -178,22 +186,21 @@
             resize: vertical;
         }
 
-                .form-button {
-                    padding: 10px 20px;
-                    background-color: #4CAF50; 
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 16px;
-                    width: 100%; 
-                  
-                    &:last-of-type {
-                        background-color: #f44336; 
-                        margin-top: 10px; 
-                        
-                    }
-                }
+        .form-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+
+            &:last-of-type {
+                background-color: #f44336;
+                margin-top: 10px;
+            }
+        }
 
         button[type="button"] {
             align-self: flex-start;
@@ -205,8 +212,6 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
-    
 
         button[type="button"]:last-of-type {
             background-color: #f44336;

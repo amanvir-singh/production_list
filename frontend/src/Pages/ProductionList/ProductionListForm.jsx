@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../Components/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
+import Select from "react-select";
 import "../../css/ProductionList/ProductionListForm.scss";
 import ConfirmationModal from "./ConfirmationModal";
 
@@ -48,12 +50,6 @@ const ProductionListForm = () => {
       const defaultJobStatus =
         jobStatuses.find((status) => status.defaultForNew)?.name || "";
 
-      console.log(
-        "Setting default statuses:",
-        defaultStockStatus,
-        defaultJobStatus
-      );
-
       setFormData((prevData) => ({
         ...prevData,
         materials: prevData.materials.map((material) => ({
@@ -81,7 +77,12 @@ const ProductionListForm = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}/materials`
       );
-      setMaterials(response.data);
+      // Sort the materials based on the alphanumeric order of the code
+      const sortedMaterials = response.data.sort((a, b) => {
+        return a.code.localeCompare(b.code, undefined, { numeric: true });
+      });
+
+      setMaterials(sortedMaterials);
     } catch (error) {
       console.error("Error fetching materials:", error);
     }
@@ -109,22 +110,6 @@ const ProductionListForm = () => {
     }
   };
 
-  const setDefaultStatuses = () => {
-    const defaultStockStatus =
-      stockStatuses.find((status) => status.defaultForNew)?.name || "";
-    const defaultJobStatus =
-      jobStatuses.find((status) => status.defaultForNew)?.name || "";
-
-    setFormData((prevData) => ({
-      ...prevData,
-      materials: prevData.materials.map((material) => ({
-        ...material,
-        stockStatus: defaultStockStatus,
-        jobStatus: defaultJobStatus,
-      })),
-    }));
-  };
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -134,16 +119,6 @@ const ProductionListForm = () => {
     newMaterials[index][field] = value;
     if (field === "customMaterial") {
       newMaterials[index].material = value ? "" : newMaterials[index].material;
-    }
-    if (field === "jobStatus") {
-      const jobStatusToArchive = jobStatuses.find(
-        (status) => status.name === value && status.defaultForAutoArchive
-      );
-      // if (jobStatusToArchive) {
-      //   alert(
-      //     "This job status will automatically archive the job upon saving."
-      //   );
-      // }
     }
     setFormData({ ...formData, materials: newMaterials });
   };
@@ -196,12 +171,21 @@ const ProductionListForm = () => {
   const confirmSaveAction = async () => {
     try {
       let savedJob;
+      let previousData = null;
+
       if (id) {
+        // For editing an existing job, fetch the previous data before update
+        const previousJobResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${id}`
+        );
+        previousData = previousJobResponse.data;
+
         savedJob = await axios.put(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/${id}`,
           formData
         );
       } else {
+        // For creating a new job
         savedJob = await axios.post(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/add`,
           formData
@@ -214,7 +198,6 @@ const ProductionListForm = () => {
         );
         return jobStatus && jobStatus.defaultForAutoArchive;
       });
-
       if (allMaterialsAutoArchive) {
         await axios.patch(
           `${import.meta.env.VITE_APP_ROUTE}/productionLists/${
@@ -222,6 +205,19 @@ const ProductionListForm = () => {
           }/archive`
         );
       }
+
+      // Log the action to the backend
+      const logData = {
+        user: user.username,
+        action: id
+          ? `Edited Job: ${formData.jobName}`
+          : `Added Job: ${formData.jobName}`,
+        previousData: previousData,
+        updatedData: formData,
+      };
+
+      // Send log data to backend
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, logData);
 
       navigate("/");
     } catch (error) {
@@ -319,21 +315,25 @@ const ProductionListForm = () => {
               ) : (
                 <div className="input-group">
                   <label htmlFor={`material-${index}`}>Material:</label>
-                  <select
+                  <Select
                     id={`material-${index}`}
-                    value={material.material}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "material", e.target.value)
+                    value={{
+                      label: material.material,
+                      value: material.material,
+                    }}
+                    onChange={(selectedOption) =>
+                      handleMaterialChange(
+                        index,
+                        "material",
+                        selectedOption.value
+                      )
                     }
-                    disabled={isStockManager}
-                  >
-                    <option value="">Select Material</option>
-                    {materials.map((m) => (
-                      <option key={m._id} value={m.code}>
-                        {m.code}
-                      </option>
-                    ))}
-                  </select>
+                    options={materials.map((m) => ({
+                      label: m.code,
+                      value: m.code,
+                    }))}
+                    isDisabled={isStockManager}
+                  />
                 </div>
               )}
             </div>
@@ -443,7 +443,6 @@ const ProductionListForm = () => {
             value={formData.note}
             onChange={handleChange}
             placeholder="Enter Note"
-            disabled={isStockManager}
           />
         </div>
         <button type="button" onClick={handleSaveClick} className="form-button">
