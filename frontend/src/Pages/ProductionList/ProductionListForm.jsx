@@ -227,6 +227,145 @@ const ProductionListForm = () => {
     setActionType(null);
   };
 
+  const handlePrintClick = () => {
+    const printContent = document.querySelector(
+      ".production-list-form"
+    ).innerHTML;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.write(`
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        color: #333;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
+      }
+      .print-header {
+        display: block !important;
+        text-align: right;
+        margin-bottom: 5px;
+        font-style: italic;
+        font-size: 12px;
+      }
+      h1 {
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+      h2 {
+        font-size: 14px;
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
+      .job-info {
+        margin-bottom: 10px;
+      }
+      .job-info p {
+        margin: 3px 0;
+        font-size: 12px;
+      }
+      .materials-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .material-entry {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 8px;
+        margin-bottom: 8px;
+        width: calc(33% - 5px);
+        box-sizing: border-box;
+      }
+      .material-entry h3 {
+        margin-top: 0;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 3px;
+        font-size: 13px;
+      }
+      .material-entry p {
+        margin: 2px 0;
+        font-size: 11px;
+      }
+      @media print {
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+        .page-break {
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Job Details</h1>
+      <h2>Cutlist: ${formData.cutlistName}</h2>
+    </div>
+    <p class="print-header">Printed by: ${user.username}</p>
+    <div class="job-info">
+      <p><strong>Job Name:</strong> ${formData.jobName}</p>
+      <p><strong>Priority:</strong> ${formData.priority}</p>
+      <p><strong>Note:</strong> ${formData.note}</p>
+    </div>
+    <div class="materials-container">
+      ${formData.materials
+        .map(
+          (material, index) => `
+        <div class="material-entry">
+          <h3>Material ${index + 1}</h3>
+          <p><strong>Material:</strong> ${
+            material.material || material.customMaterial
+          }</p>
+          <p><strong>Saw Quantity:</strong> ${material.quantitySaw}</p>
+          <p><strong>CNC Quantity:</strong> ${material.quantityCNC}</p>
+          <p><strong>Total Quantity:</strong> ${
+            material.quantityCNC + material.quantitySaw
+          }</p>
+          <p><strong>Stock Status:</strong> ${material.stockStatus}</p>
+          <p><strong>Job Status:</strong> ${material.jobStatus}</p>
+        </div>
+        ${(index + 1) % 12 === 0 ? '<div class="page-break"></div>' : ""}
+      `
+        )
+        .join("")}
+    </div>
+  </body>
+  </html>
+`);
+
+    iframe.contentDocument.close();
+
+    // Use a setTimeout to ensure the content is fully loaded
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+
+      // Remove the iframe after printing
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 100);
+    }, 250);
+  };
+
   const canEditAll = ["Editor", "Manager", "admin"].includes(user.role);
   const isStockManager = user.role === "Inventory Associate";
 
@@ -244,6 +383,21 @@ const ProductionListForm = () => {
 
   return (
     <div className="production-list-form">
+      <div className="top-button-container">
+        <button type="button" onClick={handleSaveClick} className="form-button">
+          Save
+        </button>
+        <button className="form-button cancel" onClick={handleCancelClick}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handlePrintClick}
+          className="form-button print"
+        >
+          Print
+        </button>
+      </div>
       <h2>{id ? "Edit Job" : "Add New Job"}</h2>
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="input-group">
