@@ -78,7 +78,11 @@ const EditMaterial = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}/finishes`
       );
-      setFinishes(response.data);
+      const sortedFinishes = response.data.sort((a, b) => {
+        return a.name.localeCompare(b.name, undefined, { numeric: true });
+      });
+
+      setFinishes(sortedFinishes);
     } catch (error) {
       console.error("Error fetching finishes:", error);
     }

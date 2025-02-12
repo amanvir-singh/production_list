@@ -136,7 +136,10 @@ const ProductionListTable = ({
                     <td rowSpan={Math.max(1, list.materials.length)}>
                       {highlightText(list.cutlistName, searchTerm)}
                     </td>
-                    <td rowSpan={Math.max(1, list.materials.length)}>
+                    <td
+                      className="jobs-column"
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
                       {highlightText(list.jobName, searchTerm)}
                     </td>
                   </>
