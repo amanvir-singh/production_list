@@ -168,7 +168,10 @@ const ProductionListTable = ({
                 >
                   {highlightText(material.stockStatus || "", searchTerm)}
                 </td>
-                <td style={{ backgroundColor: jobStatusColor }}>
+                <td
+                  className="jobStatus-column"
+                  style={{ backgroundColor: jobStatusColor }}
+                >
                   {highlightText(material.jobStatus || "", searchTerm)}
                 </td>
                 {materialIndex === 0 && (

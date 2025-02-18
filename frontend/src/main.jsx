@@ -1,8 +1,9 @@
-import { StrictMode, useEffect } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./Components/Header.jsx";
 import { AuthProvider } from "./Components/AuthContext.jsx";
+import io from "socket.io-client";
 import "./index.css";
 import Login from "./Pages/Login.jsx";
 import Signup from "./Pages/Signup.jsx";
@@ -35,6 +36,9 @@ import LogList from "./Pages/Logs/LogList.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  const socket = io(`${import.meta.env.VITE_APP_ROUTE}`);
 
   useEffect(() => {
     const handleLogout = () => {
@@ -47,15 +51,25 @@ const AppWithEventListener = () => {
 
     window.addEventListener("logout", handleLogout);
     window.addEventListener("loginSuccess", handleLoginSuccess);
+
+    // Socket.io event listener
+    socket.on("dataUpdated", (change) => {
+      console.log("Data updated:", change);
+      setLastUpdate(new Date().toISOString());
+      window.location.reload();
+    });
+
     return () => {
       window.removeEventListener("logout", handleLogout);
       window.removeEventListener("loginSuccess", handleLoginSuccess);
+      socket.off("dataUpdated");
     };
   }, [navigate]);
 
   return (
     <>
       <Header />
+      {lastUpdate && <div>Last updated: {lastUpdate}</div>}
       <Routes>
         <Route path="/" element={<ProductionList />} />
         <Route path="/signup" element={<Signup />} />
