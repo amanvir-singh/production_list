@@ -47,6 +47,9 @@ const Header = () => {
             <li>
               <a href="/preprod">PreProd</a>
             </li>
+            <li>
+              <a href="/TLFInventory">TLF Inventory</a>
+            </li>
             {isLoggedIn && canAddJob ? (
               <li>
                 <a href="/add-production-list">Add New Job</a>

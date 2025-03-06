@@ -33,6 +33,7 @@ import ProductionListForm from "./Pages/ProductionList/ProductionListForm.jsx";
 import { useNavigate } from "react-router-dom";
 import PreProd from "./Pages/PreProd/PreProd.jsx";
 import LogList from "./Pages/Logs/LogList.jsx";
+import TLFInventory from "./Pages/TLFInventory/TLFInventory.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -120,6 +121,7 @@ const AppWithEventListener = () => {
         />
         <Route path="/preprod" element={<PreProd />} />
         <Route path="/manage/logsList" element={<LogList />} />
+        <Route path="/TLFInventory" element={<TLFInventory />} />
       </Routes>
     </>
   );
