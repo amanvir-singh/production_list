@@ -5,6 +5,7 @@ import { AuthContext } from "../../Components/AuthContext";
 
 const TLFInventory = () => {
   const [inventoryData, setInventoryData] = useState([]);
+  const [fixersData, setFixersData] = useState([]); // Added fixersData state
   const [isHideZeroQty, setIsHideZeroQty] = useState(false);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
@@ -12,19 +13,44 @@ const TLFInventory = () => {
   const { user } = useContext(AuthContext);
   const printRef = useRef();
   const [isFetching, setIsFetching] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
   useEffect(() => {
-    fetchTLFInventory();
+    fetchTLFInventory(); // Fetch inventory and fixers on component mount
   }, []);
 
   const fetchTLFInventory = async () => {
     try {
-      const response = await axios.get(
+      const inventoryResponse = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}/TLFInventory`
       );
-      const boards = response.data[0]?.boards || [];
+      const boards = inventoryResponse.data[0]?.boards || [];
       setInventoryData(boards);
-      setLastFetchedAt(new Date(response.data[0]?.FetchedAt).toLocaleString());
+      setLastFetchedAt(
+        new Date(inventoryResponse.data[0]?.FetchedAt).toLocaleString()
+      );
+
+      // Fetch the fixers data
+      const fixersResponse = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/tlfinventoryfixer`
+      );
+      setFixersData(fixersResponse.data || []);
+
+      // Update the inventory data based on fixers
+      const updatedInventoryData = boards.map((board) => {
+        // Find the corresponding fixer for the board (if any)
+        const fixer = fixersResponse.data.find(
+          (fixerItem) => fixerItem.BoardCode === board.BoardCode
+        );
+        if (fixer) {
+          // Adjust the board's TotalQty based on the fixer quantity
+          board.TotalQty += fixer.QtytoFix;
+        }
+
+        return board;
+      });
+
+      setInventoryData(updatedInventoryData);
     } catch (error) {
       console.error("Error fetching TLF Inventory data:", error);
       setErrorModalOpen(true);
@@ -88,6 +114,10 @@ const TLFInventory = () => {
     return {};
   };
 
+  const handleRowClick = (index) => {
+    setSelectedRowIndex(index === selectedRowIndex ? null : index);
+  };
+
   return (
     <div className="tlf-inventory-list" ref={printRef}>
       <div className="print-header">
@@ -122,10 +152,10 @@ const TLFInventory = () => {
         <thead>
           <tr>
             <th>Board Code</th>
+            <th>Quantity</th>
             <th>Length</th>
             <th>Width</th>
             <th>Thickness</th>
-            <th>Quantity</th>
           </tr>
         </thead>
         <tbody>
@@ -135,7 +165,13 @@ const TLFInventory = () => {
             </tr>
           ) : (
             filteredData.map((item, index) => (
-              <tr key={index}>
+              <tr
+                key={index}
+                onClick={() => handleRowClick(index)}
+                style={{
+                  backgroundColor: selectedRowIndex === index ? "skyblue" : "",
+                }}
+              >
                 <td>
                   {item.BoardCode.split(
                     new RegExp(`(${searchQuery})`, "gi")
@@ -149,10 +185,16 @@ const TLFInventory = () => {
                     )
                   )}
                 </td>
-                <td>{item.Length?.$numberDecimal}</td>
-                <td>{item.Width?.$numberDecimal}</td>
-                <td>{item.Thickness?.$numberDecimal}</td>
-                <td>{item.TotalQty}</td>
+                <td style={{ textAlign: "center" }}>{item.TotalQty}</td>
+                <td style={{ textAlign: "center" }}>
+                  {item.Length?.$numberDecimal}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {item.Width?.$numberDecimal}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {item.Thickness?.$numberDecimal}
+                </td>
               </tr>
             ))
           )}

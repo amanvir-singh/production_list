@@ -34,6 +34,9 @@ import { useNavigate } from "react-router-dom";
 import PreProd from "./Pages/PreProd/PreProd.jsx";
 import LogList from "./Pages/Logs/LogList.jsx";
 import TLFInventory from "./Pages/TLFInventory/TLFInventory.jsx";
+import TLFInventoryFixerList from "./Pages/TLFInventoryFixer/TLFInventoryFixerList.jsx";
+import AddTLFInventoryFixer from "./Pages/TLFInventoryFixer/AddTLFInventoryFixer.jsx";
+import EditTLFInventoryFixer from "./Pages/TLFInventoryFixer/EditTLFInventoryFixer.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -120,8 +123,20 @@ const AppWithEventListener = () => {
           element={<ProductionListForm />}
         />
         <Route path="/preprod" element={<PreProd />} />
+        <Route path="InventoryTLF" element={<TLFInventory />} />
         <Route path="/manage/logsList" element={<LogList />} />
-        <Route path="/TLFInventory" element={<TLFInventory />} />
+        <Route
+          path="/manage/tlfinventoryfixerlist"
+          element={<TLFInventoryFixerList />}
+        />
+        <Route
+          path="/add-tlf-inventory-fixer"
+          element={<AddTLFInventoryFixer />}
+        />
+        <Route
+          path="/edit-tlf-inventory-fixer/:id"
+          element={<EditTLFInventoryFixer />}
+        />
       </Routes>
     </>
   );

@@ -15,6 +15,7 @@ const stockstatusindicatorsRoutes = require("./routes/stockstatusindicator");
 const productionListRoutes = require("./routes/productionList");
 const preProdRoutes = require("./routes/preprod");
 const TLFInventoryRoutes = require("./routes/TLFInventory");
+const TLFInventoryFixerRoutes = require("./routes/TLFInventoryFixer");
 
 const app = express();
 
@@ -34,6 +35,7 @@ const corsOptions = {
       "http://productionmanager.local:8080", // Your custom domain
       "http://192.168.78.78:8080", // Backend IP address
       "http://localhost:5173", // Localhost for development
+      "http://localhost:4173", // Localhost for build preview
     ];
 
     // Allow requests with no origin (e.g., mobile apps or curl requests)
@@ -68,7 +70,7 @@ app.use("/stockStatusIndicators", stockstatusindicatorsRoutes);
 app.use("/productionLists", productionListRoutes);
 app.use("/preprod", preProdRoutes);
 app.use("/TLFInventory", TLFInventoryRoutes);
-
+app.use("/tlfinventoryfixer", TLFInventoryFixerRoutes);
 // const PORT = process.env.PORT || 3001;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 

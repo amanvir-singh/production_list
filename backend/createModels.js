@@ -10,6 +10,7 @@ const stockStatusIndicatorSchema = require("./models/stockstatusindicator");
 const productionListSchema = require("./models/productionList");
 const logSchema = require("./models/logs");
 const TLFInventorySchema = require("./models/TLFInventory");
+const TLFInventoryFixerSchema = require("./models/TLFInventoryFixer");
 
 function initializeModels() {
   console.log("Checking for Models...");
@@ -33,6 +34,10 @@ function initializeModels() {
     },
     logs: { name: "logs", schema: logSchema },
     TLFInventory: { name: "TLFInventory", schema: TLFInventorySchema },
+    TLFInventoryFixer: {
+      name: "TLFInventoryFixer",
+      schema: TLFInventoryFixerSchema,
+    },
   };
 
   Object.entries(models).forEach(([key, { name, schema }]) => {
@@ -56,6 +61,7 @@ function initializeModels() {
     ProductionList: models.productionLists.model,
     Log: models.logs.model,
     TLFInventory: models.TLFInventory.model,
+    TLFInventoryFixer: models.TLFInventoryFixer.model,
   };
 }
 
@@ -72,5 +78,6 @@ module.exports = {
     productionListSchema,
     logSchema,
     TLFInventorySchema,
+    TLFInventoryFixerSchema,
   },
 };
