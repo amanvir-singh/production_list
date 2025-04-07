@@ -40,6 +40,9 @@
   padding: 20px;
   background-color: #f8f9fa;
   min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: block;
 
   h1 {
     display: flex;
@@ -109,7 +112,7 @@
   .job-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 50px;
 
     .job-card {
       background: white;
@@ -196,6 +199,15 @@
             }
           }
 
+          &:nth-child(5) {
+            background-color: #28a745;
+            color: white;
+
+            &:hover {
+              background-color: #1e7e34;
+            }
+          }
+
           &:nth-child(3) {
             background-color: #17a2b8;
             color: white;
@@ -214,7 +226,7 @@
         th,
         td {
           padding: 8px;
-          text-align: left;
+          text-align: center;
           border-bottom: 1px solid #ddd;
         }
 

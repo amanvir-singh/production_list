@@ -6,6 +6,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import FilterModal from "./FilterModal";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import CreatePTXModal from "./CreatePTXModal";
 
 const JobList = () => {
   const [jobLists, setJobLists] = useState([]);
@@ -23,6 +24,14 @@ const JobList = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
+  const [isPTXModalOpen, setIsPTXModalOpen] = useState(false);
+  const [currentJobForPTX, setCurrentJobForPTX] = useState(null);
+
+  const canEdit =
+    user.role === "Reader" ||
+    user.role === "Editor" ||
+    user.role === "Manager" ||
+    user.role === "admin";
 
   useEffect(() => {
     fetchJobLists();
@@ -238,6 +247,26 @@ const JobList = () => {
     return highlightedParts;
   };
 
+  const handleCreatePTX = (job) => {
+    setCurrentJobForPTX(job);
+  };
+
+  const handlePTXMocalClose = () => {
+    setIsPTXModalOpen(false);
+    setCurrentJobForPTX(null);
+    fetchJobLists();
+  };
+
+  useEffect(() => {
+    if (currentJobForPTX) {
+      setIsPTXModalOpen(true);
+    }
+  }, [currentJobForPTX]);
+
+  const handleAddToExistingPartList = (job) => {
+    console.log("Add to Existing Part List for", job.jobName);
+  };
+
   return (
     <div className="job-list-container">
       {!showArchived ? (
@@ -252,13 +281,14 @@ const JobList = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
-        <Link to="/add-job" className="button btn-add-job">
-          Add New Job
-        </Link>
-
+        {canEdit ? (
+          <Link to="/add-job" className="button btn-add-job">
+            Add New Job
+          </Link>
+        ) : (
+          ""
+        )}
         <button onClick={() => setIsFilterModalOpen(true)}>Filters</button>
-
         {Object.values(filters).some((f) => f.length > 0) && (
           <button className="btn-clear-filter" onClick={clearFilters}>
             Clear Filters
@@ -286,19 +316,32 @@ const JobList = () => {
               </div>
             </div>
             <div className="job-actions">
-              <button onClick={() => navigate(`/edit-job/${job._id}`)}>
-                Edit
-              </button>
-              <button onClick={() => handleDelete(job._id)}>Delete</button>
-              {showArchived ? (
-                <button onClick={() => handleUnarchive(job._id)}>
-                  Unarchive
-                </button>
+              {canEdit ? (
+                <>
+                  <button onClick={() => navigate(`/edit-job/${job._id}`)}>
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(job._id)}>Delete</button>
+                  {showArchived ? (
+                    <button onClick={() => handleUnarchive(job._id)}>
+                      Unarchive
+                    </button>
+                  ) : (
+                    <button onClick={() => handleArchive(job._id)}>
+                      Archive
+                    </button>
+                  )}
+                  <button onClick={() => handlePrintJob(job)}>Print</button>
+                  <button onClick={() => handleCreatePTX(job)}>
+                    Create PTX
+                  </button>
+                  {/* <button onClick={() => handleAddToExistingPartList(job)}>
+        Add to Existing Part List
+      </button> */}
+                </>
               ) : (
-                <button onClick={() => handleArchive(job._id)}>Archive</button>
+                <button onClick={() => handlePrintJob(job)}>Print</button>
               )}
-
-              <button onClick={() => handlePrintJob(job)}>Print</button>
             </div>
             <table>
               <thead>
@@ -362,6 +405,14 @@ const JobList = () => {
           message={confirmationMessage}
         />
       )}
+      <CreatePTXModal
+        isOpen={isPTXModalOpen}
+        onClose={() => handlePTXMocalClose()}
+        onCreatePTX={() => handleCreatePTX(currentJobForPTX)}
+        jobName={currentJobForPTX?.jobName || ""}
+        job={currentJobForPTX}
+        user={user.username}
+      />
     </div>
   );
 };

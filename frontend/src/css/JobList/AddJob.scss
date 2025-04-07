@@ -276,6 +276,8 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
+  max-width: 1900px; /* Set max-width to 1200px */
+  margin: 0 auto;
 }
 
 .job-table {
