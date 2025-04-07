@@ -37,6 +37,15 @@ import TLFInventory from "./Pages/TLFInventory/TLFInventory.jsx";
 import TLFInventoryFixerList from "./Pages/TLFInventoryFixer/TLFInventoryFixerList.jsx";
 import AddTLFInventoryFixer from "./Pages/TLFInventoryFixer/AddTLFInventoryFixer.jsx";
 import EditTLFInventoryFixer from "./Pages/TLFInventoryFixer/EditTLFInventoryFixer.jsx";
+import JobList from "./Pages/JobList/JobList.jsx";
+import AddJob from "./Pages/JobList/AddJob.jsx";
+import EdgebandList from "./Pages/Edgebands/EdgeBandsList.jsx";
+import AddEdgeband from "./Pages/Edgebands/AddEdgeBand.jsx";
+import EditEdgeband from "./Pages/Edgebands/EditEdgeBand.jsx.jsx";
+import JobListMaterialList from "./Pages/JobListMaterials/JobListMaterialsList.jsx";
+import AddJobListMaterial from "./Pages/JobListMaterials/AddJobListMaterial.jsx";
+import EditJobListMaterial from "./Pages/JobListMaterials/EditJobListMaterial.jsx";
+import EditJob from "./Pages/JobList/EditJob.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -137,6 +146,21 @@ const AppWithEventListener = () => {
           path="/edit-tlf-inventory-fixer/:id"
           element={<EditTLFInventoryFixer />}
         />
+        <Route path="/jobList" element={<JobList />} />
+        <Route path="/add-job" element={<AddJob />} />
+        <Route path="/manage/EdgeBandList" element={<EdgebandList />} />
+        <Route path="/add-edgeband" element={<AddEdgeband />} />
+        <Route path="/edit-edgeband/:id" element={<EditEdgeband />} />
+        <Route
+          path="/manage/jobListMaterialList"
+          element={<JobListMaterialList />}
+        />
+        <Route path="/add-joblistmaterial" element={<AddJobListMaterial />} />
+        <Route
+          path="/edit-joblistmaterial/:id"
+          element={<EditJobListMaterial />}
+        />
+        <Route path="/edit-job/:jobId" element={<EditJob />} />
       </Routes>
     </>
   );

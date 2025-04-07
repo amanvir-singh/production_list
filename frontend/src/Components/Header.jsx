@@ -50,13 +50,9 @@ const Header = () => {
             <li>
               <a href="/InventoryTLF">TLF Inventory</a>
             </li>
-            {isLoggedIn && canAddJob ? (
-              <li>
-                <a href="/add-production-list">Add New Job</a>
-              </li>
-            ) : (
-              <></>
-            )}
+            <li>
+              <a href="/jobList">Job List</a>
+            </li>
 
             {isLoggedIn ? (
               <li className="manage-dropdown">
@@ -96,6 +92,14 @@ const Header = () => {
                     <li>
                       <a href="/manage/tlfinventoryfixerlist">
                         TLF Inventory Fixer
+                      </a>
+                    </li>
+                    <li>
+                      <a href="/manage/EdgeBandList">EdgeBand</a>
+                    </li>
+                    <li>
+                      <a href="/manage/jobListMaterialList">
+                        Job List Material
                       </a>
                     </li>
                   </ul>

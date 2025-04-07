@@ -11,6 +11,9 @@ const productionListSchema = require("./models/productionList");
 const logSchema = require("./models/logs");
 const TLFInventorySchema = require("./models/TLFInventory");
 const TLFInventoryFixerSchema = require("./models/TLFInventoryFixer");
+const jobListSchema = require("./models/jobList");
+const jobListMaterialSchema = require("./models/jobListMaterial");
+const edgebandSchema = require("./models/edgeBand");
 
 function initializeModels() {
   console.log("Checking for Models...");
@@ -38,6 +41,9 @@ function initializeModels() {
       name: "TLFInventoryFixer",
       schema: TLFInventoryFixerSchema,
     },
+    jobList: { name: "jobList", schema: jobListSchema },
+    jobListMaterial: { name: "jobListMaterial", schema: jobListMaterialSchema },
+    edgeBand: { name: "edgeBand", schema: edgebandSchema },
   };
 
   Object.entries(models).forEach(([key, { name, schema }]) => {
@@ -62,6 +68,9 @@ function initializeModels() {
     Log: models.logs.model,
     TLFInventory: models.TLFInventory.model,
     TLFInventoryFixer: models.TLFInventoryFixer.model,
+    jobList: models.jobList.model,
+    jobListMaterial: models.jobListMaterial.model,
+    edgeBand: models.edgeBand.model,
   };
 }
 
@@ -79,5 +88,8 @@ module.exports = {
     logSchema,
     TLFInventorySchema,
     TLFInventoryFixerSchema,
+    jobListSchema,
+    jobListMaterialSchema,
+    edgebandSchema,
   },
 };

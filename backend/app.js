@@ -16,6 +16,9 @@ const productionListRoutes = require("./routes/productionList");
 const preProdRoutes = require("./routes/preprod");
 const TLFInventoryRoutes = require("./routes/TLFInventory");
 const TLFInventoryFixerRoutes = require("./routes/TLFInventoryFixer");
+const jobListRoutes = require("./routes/jobList");
+const jobListMaterialRoutes = require("./routes/jobListMaterial");
+const edgeBandRoutes = require("./routes/edgeBand");
 
 const app = express();
 
@@ -71,6 +74,9 @@ app.use("/productionLists", productionListRoutes);
 app.use("/preprod", preProdRoutes);
 app.use("/TLFInventory", TLFInventoryRoutes);
 app.use("/tlfinventoryfixer", TLFInventoryFixerRoutes);
+app.use("/joblist", jobListRoutes);
+app.use("/joblistmaterial", jobListMaterialRoutes);
+app.use("/edgeband", edgeBandRoutes);
 // const PORT = process.env.PORT || 3001;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
