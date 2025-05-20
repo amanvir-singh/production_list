@@ -122,7 +122,10 @@ router.post("/create-ptx", async (req, res) => {
 
     let fileContent = [];
 
-    const header = `JOBS,1,${filename},${filename},${currentTime},${currentTime},Customer,0,,,,,`;
+    const header = `JOBS,1,${filename.slice(0, -4)},${filename.slice(
+      0,
+      -4
+    )},${currentTime},${currentTime},Customer,0,,,,,`;
     fileContent.push(header);
 
     const distinctMaterials = [
