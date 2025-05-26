@@ -1,0 +1,28 @@
+CT~~CD,~CC^~CT~
+^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD25^JUS^LRN^CI0^XZ
+^XA
+^MMT
+^PW609
+^LL0609
+^LS0
+^FO96,400
+{Part_Image}
+^FO360,352
+{Barcode_Image}
+^FT64,81^A0N,29,26^FH\^FD{{Job_Name}}^FS
+^FT64,118^A0N,30,24^FH\^FD{{Work_Order_Name}}^FS
+^FT242,45^A0N,31,31^FB168,1,0,C^FH\^FD{{Edge_Top}}^FS
+^FO64,127^GB480,0,5^FS
+^FT64,169^A0N,29,26^FH\^FD{{Item_No}}^FS
+^FT146,169^A0N,29,33^FH\^FD{{Part_Name}}^FS
+^FT64,205^A0N,29,31^FH\^FDMat : {{Material_Code}}^FS
+^FT64,241^A0N,29,31^FH\^FDCut Dim: {{Length}} x {{Width}}^FS
+^FT64,280^A0N,25,26^FH,2\^FDNote: {{Note}}^FS
+^FO64,296^GB480,0,5^FS
+^FT64,340^A0N,29,24^FH\^FDBack/Side Machining:  {{Back_Machining}}/{{Side_Machining}}^FS
+^FT221,584^A0N,31,31^FB168,1,0,C^FH\^FD{{Edge_Bottom}}^FS
+^FT50,342^A0B,31,31^FB127,1,0,C^FH\^FD{{Edge_Left}}^FS
+^FT554,215^A0R,31,31^FB147,1,0,C^FH\^FD{{Edge_Right}}^FS
+^FT480,81^A0N,29,26^FH\^FDRot: {{Rotation}}^FS
+^FT407,551^A0N,29,24^FH\^FD{{Part_ID}}^FS
+^PQ1,0,1,Y^XZ

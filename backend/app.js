@@ -19,6 +19,7 @@ const TLFInventoryFixerRoutes = require("./routes/TLFInventoryFixer");
 const jobListRoutes = require("./routes/jobList");
 const jobListMaterialRoutes = require("./routes/jobListMaterial");
 const edgeBandRoutes = require("./routes/edgeBand");
+const partsLabelsRoutes = require("./routes/partlabels");
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use("/tlfinventoryfixer", TLFInventoryFixerRoutes);
 app.use("/joblist", jobListRoutes);
 app.use("/joblistmaterial", jobListMaterialRoutes);
 app.use("/edgeband", edgeBandRoutes);
+app.use("/partlabels", partsLabelsRoutes);
 // const PORT = process.env.PORT || 3001;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 

@@ -53,6 +53,9 @@ const Header = () => {
             <li>
               <a href="/jobList">Job List</a>
             </li>
+            <li>
+              <a href="/PartLabels">Part Labels</a>
+            </li>
 
             {isLoggedIn ? (
               <li className="manage-dropdown">

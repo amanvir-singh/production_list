@@ -46,6 +46,8 @@ import JobListMaterialList from "./Pages/JobListMaterials/JobListMaterialsList.j
 import AddJobListMaterial from "./Pages/JobListMaterials/AddJobListMaterial.jsx";
 import EditJobListMaterial from "./Pages/JobListMaterials/EditJobListMaterial.jsx";
 import EditJob from "./Pages/JobList/EditJob.jsx";
+import PartLabels from "./Pages/PartLabels/PartLabels.jsx";
+import LabelPreview from "./Pages/PartLabels/LabelPreview.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -161,6 +163,8 @@ const AppWithEventListener = () => {
           element={<EditJobListMaterial />}
         />
         <Route path="/edit-job/:jobId" element={<EditJob />} />
+        <Route path="/PartLabels" element={<PartLabels />} />
+        <Route path="/labelpreview/view/:fileName" element={<LabelPreview />} />
       </Routes>
     </>
   );
