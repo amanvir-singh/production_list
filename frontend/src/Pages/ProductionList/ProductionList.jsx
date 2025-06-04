@@ -12,6 +12,8 @@ const ProductionList = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useContext(AuthContext);
+  const [jobNames, setJobNames] = useState([]);
+  const [addedby, setAddedBy] = useState([]);
 
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +42,20 @@ const ProductionList = () => {
   }, [showArchived]);
 
   useEffect(() => {
+    const fetchUserNamesController = async () => {
+      await fetchUserNames();
+    };
+    if (jobNames.length > 0) {
+      fetchUserNamesController();
+    }
+  }, [jobNames]);
+
+  useEffect(() => {
+    const extractedJobNames = productionLists.map((item) => item.cutlistName);
+    setJobNames(extractedJobNames);
+  }, [productionLists]);
+
+  useEffect(() => {
     if (productionLists.length > 0) {
       fetchAvailableFilters();
     }
@@ -56,6 +72,18 @@ const ProductionList = () => {
       setProductionLists(response.data);
     } catch (error) {
       console.error("Error fetching production lists:", error);
+    }
+  };
+
+  const fetchUserNames = async () => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_ROUTE}/productionLists/names`,
+        { jobNames }
+      );
+      setAddedBy(response.data);
+    } catch (error) {
+      console.error("Error fetching user names for the jobs:", error);
     }
   };
 
@@ -328,6 +356,7 @@ const ProductionList = () => {
         userRole={user.role}
         showArchived={showArchived}
         searchTerm={searchTerm}
+        addedByList={addedby}
       />
 
       {/* Confirmation Modal */}

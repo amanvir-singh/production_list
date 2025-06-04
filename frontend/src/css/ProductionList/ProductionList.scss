@@ -1,202 +1,203 @@
-
-
 @media print {
-    .controls {
-        display: none !important;
-    }
+  .production-list {
+    zoom: 0.7;
+  }
+  .controls {
+    display: none !important;
+  }
 
-    .header__actions,
-    .header__nav {
-        display: none;
-    }
+  .header__actions,
+  .header__nav {
+    display: none;
+  }
 
-         .production-list table th,
-         .production-list table td {
-             font-size: 10px !important;
-         }
+  .production-list table th,
+  .production-list table td {
+    font-size: 10px !important;
+  }
 
-    .production-list table th:nth-child(13),
-    .production-list table td:nth-child(13) {
-        display: none !important;
-    }
+  .production-list table th:nth-child(13),
+  .production-list table td:nth-child(13) {
+    width: 100px !important;
+  }
 
-        .production-list table th:nth-child(11),
-        .production-list table td:nth-child(11) {
-            display: none !important;
-        }
+  .production-list table th:nth-child(14),
+  .production-list table td:nth-child(14) {
+    display: none !important;
+  }
 
-                .production-list table th:nth-child(12),
-                .production-list table td:nth-child(12) {
-                    display: none !important;
-                }
+  .production-list table th:nth-child(11),
+  .production-list table td:nth-child(11) {
+    display: none !important;
+  }
 
-    .production-list table th:nth-child(10),
-    .production-list table td:nth-child(10) {
-            width:200px !important;
-    }
+  .production-list table th:nth-child(12),
+  .production-list table td:nth-child(12) {
+    display: none !important;
+  }
 
-        .production-list table th:nth-child(9),
-        .production-list table td:nth-child(9) {
-            display: table-cell !important;
-          
-        }
-                
+  .production-list table th:nth-child(10),
+  .production-list table td:nth-child(10) {
+    width: 200px !important;
+  }
 
+  .production-list table th:nth-child(9),
+  .production-list table td:nth-child(9) {
+    display: table-cell !important;
+  }
 
-    
-    .print-header {
-        display: block !important;
-        text-align: right;
-        margin-bottom: 10px;
-        font-style: italic;
-    }
+  .print-header {
+    display: block !important;
+    text-align: right;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
 }
 
 .print-header {
-    display: none;
+  display: none;
 }
 
 .production-list table th:nth-child(9),
 .production-list table td:nth-child(9) {
-    font-size: 16px;
-    max-width: 150px !important;
+  font-size: 16px;
+  max-width: 150px !important;
 }
 
 .production-list {
-    max-width: 2560px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 2560px;
+  margin: 0 auto;
+  padding: 20px;
 
-    h1 {
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    input {
+      width: 10%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button,
+    .button {
+      padding: 10px 20px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      text-decoration: none;
+      margin: 5px;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .btn-add-job {
+      background-color: #4caf50;
+    }
+
+    .btn-toggle-archive {
+      background-color: #2196f3;
+    }
+
+    .btn-archive-older {
+      background-color: #ff9800;
+    }
+
+    .btn-filters {
+      background-color: #9c27b0;
+    }
+
+    .btn-print {
+      background-color: #795548;
+    }
+
+    .btn-clear-filters {
+      background-color: #f44336;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 2px;
+      font-size: 20px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    tbody {
+      tr.cutlist-row {
+        background-color: #f9f5ff;
+      }
+
+      tr.cutlist-row:nth-child(even) {
+        background-color: #e6f7f3 !important;
+      }
+
+      .jobs-column {
+        font-size: 16px;
+        max-width: 400px !important;
+      }
+
+      .notes-column {
+        font-size: 16px;
+        max-width: 400px !important;
+      }
+
+      .jobStatus-column {
         text-align: center;
-        margin-bottom: 20px;
+        font-size: 18px;
+        max-width: 150px !important;
+      }
+      .addedBy-column {
+        text-align: center;
+        max-width: 100px !important;
+      }
     }
 
-    .controls {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-
-        input {
-                width: 10%;
-                padding: 10px;
-                font-size: 16px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-            }
-
-                button,
-                .button {
-                    padding: 10px 20px;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 18px;
-                    text-decoration: none;
-                    margin: 5px;
-                    transition: background-color 0.3s ease;
-        
-                    &:hover {
-                        opacity: 0.8;
-                    }
-                }
-        
-                .btn-add-job {
-                    background-color: #4CAF50;
-                }
-        
-                .btn-toggle-archive {
-                    background-color: #2196F3;
-                }
-        
-                .btn-archive-older {
-                    background-color: #FF9800;
-                }
-        
-                .btn-filters {
-                    background-color: #9C27B0;
-                }
-        
-                .btn-print {
-                    background-color: #795548;
-                }
-        
-                .btn-clear-filters {
-                    background-color: #F44336;
-                }
+    .edit-button,
+    .delete-button,
+    .archive-button {
+      padding: 5px 10px;
+      margin-right: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 2px;
-            font-size: 20px;
-            text-align: left;
-
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-                tbody {
-                    tr.cutlist-row {
-                            background-color: #f9f5ff;
-                         
-                        }
-                    
-                        tr.cutlist-row:nth-child(even) {
-                            background-color: #e6f7f3 !important;
-                          
-                        }
-
-                            .jobs-column {
-                                    font-size: 16px;
-                                    max-width: 400px !important;
-                            }
-
-                    .notes-column {
-                        font-size: 16px;
-                        max-width: 400px !important;
-                        
-                    }
-
-                    .jobStatus-column {
-                        text-align: center;
-                        font-size: 18px;
-                        max-width: 150px !important;
-                    }
-                    
-                }
-
-        .edit-button,
-        .delete-button,
-        .archive-button {
-            padding: 5px 10px;
-            margin-right: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-        }
-
-        .edit-button {
-            background-color: #2196F3;
-        }
-
-        .delete-button {
-            background-color: #f44336;
-        }
-
-        .archive-button {
-            background-color: #ff9800;
-        }
+    .edit-button {
+      background-color: #2196f3;
     }
+
+    .delete-button {
+      background-color: #f44336;
+    }
+
+    .archive-button {
+      background-color: #ff9800;
+    }
+  }
 }

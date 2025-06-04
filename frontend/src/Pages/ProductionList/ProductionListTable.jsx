@@ -21,6 +21,7 @@ const ProductionListTable = ({
   onUnarchive,
   userRole,
   showArchived,
+  addedByList,
 }) => {
   const [stockStatuses, setStockStatuses] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
@@ -102,19 +103,20 @@ const ProductionListTable = ({
     <table style={{ borderCollapse: "collapse", width: "100%" }}>
       <thead>
         <tr style={{ backgroundColor: "#f2f2f2" }}>
-          <th>Cutlist Name</th>
-          <th>Job Name</th>
-          <th>Material</th>
-          <th>Saw Quantity</th>
-          <th>CNC Quantity</th>
-          <th>Total Quantity</th>
-          <th>Stock Status</th>
-          <th>Job Status</th>
-          <th>Priority</th>
-          <th>Notes</th>
-          <th>Created On</th>
-          <th>Updated On</th>
-          <th>Actions</th>
+          <th style={{ textAlign: "center" }}>Cutlist Name</th>
+          <th style={{ textAlign: "center" }}>Job Name</th>
+          <th style={{ textAlign: "center" }}>Material</th>
+          <th style={{ textAlign: "center" }}>Saw Quantity</th>
+          <th style={{ textAlign: "center" }}>CNC Quantity</th>
+          <th style={{ textAlign: "center" }}>Total Quantity</th>
+          <th style={{ textAlign: "center" }}>Stock Status</th>
+          <th style={{ textAlign: "center" }}>Job Status</th>
+          <th style={{ textAlign: "center" }}>Priority</th>
+          <th style={{ textAlign: "center" }}>Notes</th>
+          <th style={{ textAlign: "center" }}>Created On</th>
+          <th style={{ textAlign: "center" }}>Updated On</th>
+          <th style={{ textAlign: "center" }}>Added By</th>
+          <th style={{ textAlign: "center" }}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -176,7 +178,10 @@ const ProductionListTable = ({
                 </td>
                 {materialIndex === 0 && (
                   <>
-                    <td rowSpan={Math.max(1, list.materials.length)}>
+                    <td
+                      style={{ textAlign: "center" }}
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
                       {list.priority}
                     </td>
                     <td
@@ -185,11 +190,23 @@ const ProductionListTable = ({
                     >
                       {highlightText(list.note, searchTerm)}
                     </td>
-                    <td rowSpan={Math.max(1, list.materials.length)}>
+                    <td
+                      style={{ textAlign: "center" }}
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
                       {new Date(list.createdAt).toLocaleDateString()}
                     </td>
-                    <td rowSpan={Math.max(1, list.materials.length)}>
+                    <td
+                      style={{ textAlign: "center" }}
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
                       {new Date(list.updatedAt).toLocaleDateString()}
+                    </td>
+                    <td
+                      className="addedBy-column"
+                      rowSpan={Math.max(1, list.materials.length)}
+                    >
+                      {addedByList[list.cutlistName] || ""}{" "}
                     </td>
                     <td rowSpan={Math.max(1, list.materials.length)}>
                       {!userRole && <p>Login to perform Actions</p>}

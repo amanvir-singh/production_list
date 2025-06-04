@@ -53,7 +53,7 @@ const AppWithEventListener = () => {
   const navigate = useNavigate();
   const [lastUpdate, setLastUpdate] = useState(null);
 
-  const socket = io(`${import.meta.env.VITE_APP_ROUTE}`);
+  //const socket = io(`${import.meta.env.VITE_APP_ROUTE}`);
 
   useEffect(() => {
     const handleLogout = () => {
@@ -68,16 +68,16 @@ const AppWithEventListener = () => {
     window.addEventListener("loginSuccess", handleLoginSuccess);
 
     // Socket.io event listener
-    socket.on("dataUpdated", (change) => {
+    /*socket.on("dataUpdated", (change) => {
       console.log("Data updated:", change);
       setLastUpdate(new Date().toISOString());
       window.location.reload();
-    });
+    });*/
 
     return () => {
       window.removeEventListener("logout", handleLogout);
       window.removeEventListener("loginSuccess", handleLoginSuccess);
-      socket.off("dataUpdated");
+      //socket.off("dataUpdated");
     };
   }, [navigate]);
 
