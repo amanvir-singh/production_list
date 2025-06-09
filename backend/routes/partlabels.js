@@ -8,6 +8,7 @@ const PNG = require("pngjs").PNG;
 const rgbaToZ64 = require("zpl-image").rgbaToZ64;
 const axios = require("axios");
 const sharp = require("sharp");
+const net = require("net");
 
 const TARGET_DIR = "\\\\10.101.60.1\\d\\control\\m60-c1\\data\\cnc\\mp4";
 //const TARGET_DIR = "H:\\mp4_dump";
@@ -19,6 +20,9 @@ const EXCLUDED_FOLDERS = [
   "mpr-parts",
   "Models3d",
 ];
+
+const PRINTER_IP = "192.168.78.207";
+const PRINTER_PORT = 9100;
 
 const ZPL_TEMPLATE = readFileSync(
   path.join(__dirname, "..", "static", "ZPL_Template.txt"),
@@ -343,6 +347,35 @@ router.post("/print-label-batch", async (req, res) => {
     console.error("Batch ZPL generation failed", err);
     res.status(500).send("Batch ZPL generation failed");
   }
+});
+
+router.post("/print-label-tcp", (req, res) => {
+  const { zplCode } = req.body;
+
+  if (!zplCode) {
+    return res.status(400).json({ error: "ZPL content is required" });
+  }
+
+  const client = new net.Socket();
+
+  client.connect(PRINTER_PORT, PRINTER_IP, () => {
+    client.write(zplCode, () => {
+      client.end();
+      console.log("Data sent to printer");
+      res.json({ message: "Label sent to printer" });
+    });
+  });
+
+  client.on("error", (err) => {
+    console.error("Printer connection error:", err.message);
+    res.status(500).json({ error: "Failed to print: " + err.message });
+  });
+
+  client.on("timeout", () => {
+    console.error("Printer connection timed out");
+    client.destroy();
+    res.status(504).json({ error: "Printer connection timed out" });
+  });
 });
 
 module.exports = router;

@@ -78,12 +78,26 @@ const LabelPreview = () => {
       const zplCode = response.data.zplCode;
       //console.log(zplCode);
 
-      const browserPrint = new ZebraBrowserPrintWrapper();
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_APP_ROUTE}/partlabels/print-label-tcp`,
+          {
+            zplCode,
+          }
+        );
+        //alert("Label sent to printer!");
+      } catch (error) {
+        console.error("Error sending to printer:", error.message);
+        alert("Print failed: " + error.message);
+      }
+
+      /*const browserPrint = new ZebraBrowserPrintWrapper();
       const defaultPrinter = await browserPrint.getDefaultPrinter();
 
       browserPrint.setPrinter(defaultPrinter);
 
       const status = await browserPrint.checkPrinterStatus();
+      console.log(status);
 
       if (status.isReadyToPrint) {
         await browserPrint.print(zplCode);
@@ -91,7 +105,7 @@ const LabelPreview = () => {
         const errorMessage = status.errors || "Unknown error";
         console.error("Printer not ready:", errorMessage);
         alert("Printer is not ready: " + errorMessage);
-      }
+      }*/
     } catch (error) {
       console.error("Print failed:", error);
       alert("Failed to generate or send label.");
@@ -116,7 +130,20 @@ const LabelPreview = () => {
 
       const zplCode = response.data.zplCode;
 
-      const browserPrint = new ZebraBrowserPrintWrapper();
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_APP_ROUTE}/partlabels/print-label-tcp`,
+          {
+            zplCode,
+          }
+        );
+        //alert("Label sent to printer!");
+      } catch (error) {
+        console.error("Error sending to printer:", error.message);
+        alert("Print failed: " + error.message);
+      }
+
+      /*const browserPrint = new ZebraBrowserPrintWrapper();
       const defaultPrinter = await browserPrint.getDefaultPrinter();
 
       browserPrint.setPrinter(defaultPrinter);
@@ -130,7 +157,7 @@ const LabelPreview = () => {
         const errorMessage = status.errors || "Unknown error";
         console.error("Printer not ready:", errorMessage);
         alert("Printer is not ready: " + errorMessage);
-      }
+      }*/
     } catch (error) {
       console.error("Batch print failed", error);
       alert("Failed to generate or send batch labels.");
