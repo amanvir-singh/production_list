@@ -30,7 +30,23 @@ const ZPL_TEMPLATE = readFileSync(
 );
 
 async function imagePathToZPLBase64(imagePath) {
-  const imageBuffer = fs.readFileSync(imagePath);
+  let imageBuffer;
+
+  try {
+    imageBuffer = fs.readFileSync(imagePath);
+  } catch (err) {
+    console.warn(
+      `Image not found at ${imagePath}, falling back to static image.`
+    );
+
+    const fallbackPath = path.join(process.cwd(), "static", "not_found.png");
+
+    if (!fs.existsSync(fallbackPath)) {
+      throw new Error(`Image not found at fallback path: ${fallbackPath}`);
+    }
+
+    imageBuffer = fs.readFileSync(fallbackPath);
+  }
 
   const resizedBuffer = await sharp(imageBuffer)
     .resize({

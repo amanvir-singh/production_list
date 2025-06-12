@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import "../../css/PartLabels/LabelPreview.scss";
 import axios from "axios";
 import ZebraBrowserPrintWrapper from "zebra-browser-print-wrapper";
+import not_found from "../../assets/img/not_found.png";
 
 const LabelPreview = () => {
   const { fileName } = useParams();
@@ -29,7 +30,7 @@ const LabelPreview = () => {
               resolve();
             };
             img.onerror = () => {
-              newImageMap[label.partId] = "/fallback.png";
+              newImageMap[label.partId] = not_found;
               resolve();
             };
             img.src = url;
@@ -71,7 +72,7 @@ const LabelPreview = () => {
         `${import.meta.env.VITE_APP_ROUTE}/partlabels/print-label`,
         {
           labelData: label,
-          partImage: imageMap[label.partId],
+          partImage: imageMap[label.partId] || not_found,
         }
       );
 
@@ -120,7 +121,7 @@ const LabelPreview = () => {
     try {
       const labelsWithImages = labels.map((label) => ({
         labelData: label,
-        partImage: imageMap[label.partId] || "/fallback.png",
+        partImage: imageMap[label.partId] || not_found,
       }));
 
       const response = await axios.post(
@@ -185,7 +186,7 @@ const LabelPreview = () => {
             <div key={label.id || index} className="label-card">
               <div className="label-preview">
                 <img
-                  src={imageMap[label.partId] || "/fallback.png"}
+                  src={imageMap[label.partId] || not_found}
                   alt={`Part Image for ${label.partId} not found or failed to load`}
                   className="label-img"
                 />
