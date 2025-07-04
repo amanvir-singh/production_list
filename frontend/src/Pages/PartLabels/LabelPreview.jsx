@@ -193,6 +193,14 @@ const LabelPreview = () => {
               </div>
               <div className="label-info">
                 <p>
+                  <span className="ptn-part-no">
+                    <strong>#{label.ptnPartNo}</strong>
+                  </span>
+                  <span className="rotation">
+                    <strong>Rot: {label.rotation}</strong>
+                  </span>
+                </p>
+                <p>
                   <strong>Job Name:</strong> {label.Job_Name}
                 </p>
                 <p>
@@ -214,7 +222,7 @@ const LabelPreview = () => {
                   <strong>Material:</strong> {label.material}
                 </p>
                 <p>
-                  <strong>Rotation:</strong> {label.rotation}
+                  <strong>Note:</strong> {label.Note}
                 </p>
                 <button
                   className="btn-print"

@@ -105,6 +105,7 @@ async function generateZPL(labelData, partImage) {
     Side_Machining: labelData.Side_Machining,
     Rotation: labelData.rotation,
     Part_ID: labelData.cutritePartId,
+    ptnPartNo: labelData.ptnPartNo,
   };
 
   for (const [key, value] of Object.entries(fields)) {
@@ -270,6 +271,7 @@ router.get("/label-data/:fileName", (req, res) => {
       return {
         cutritePartId: cutriteId,
         rotation: cols[19],
+        ptnPartNo: cols[12],
       };
     });
 
@@ -300,6 +302,7 @@ router.get("/label-data/:fileName", (req, res) => {
           Back_Machining: parts[35] ? parts[35] : "NA",
           Side_Machining: parts[34] ? parts[34] : "NA",
           rotation: Math.trunc(ref.rotation),
+          ptnPartNo: ref.ptnPartNo,
         };
       })
       .filter(Boolean);
