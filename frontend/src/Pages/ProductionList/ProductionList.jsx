@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, useRef, act } from "react";
 import axios from "axios";
 import { AuthContext } from "../../Components/AuthContext";
 import ProductionListTable from "./ProductionListTable";
@@ -14,10 +14,11 @@ const ProductionList = () => {
   const { user } = useContext(AuthContext);
   const [jobNames, setJobNames] = useState([]);
   const [addedby, setAddedBy] = useState([]);
+  const [jobStatustoMark, setJobStatustoMark] = useState("PrePROD");
 
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [actionType, setActionType] = useState(null); // 'delete', 'archive', 'unarchive', or 'archiveOlder'
+  const [actionType, setActionType] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -39,7 +40,7 @@ const ProductionList = () => {
       await fetchProductionLists();
     };
     fetchData();
-  }, [showArchived]);
+  }, [showArchived, actionType]);
 
   useEffect(() => {
     const fetchUserNamesController = async () => {
@@ -136,6 +137,12 @@ const ProductionList = () => {
     setIsModalOpen(true);
   };
 
+  const handlePrerod = (id) => {
+    setSelectedId(id);
+    setActionType("preprod");
+    setIsModalOpen(true);
+  };
+
   const handleArchive = (id) => {
     setSelectedId(id);
     setActionType("archive");
@@ -172,6 +179,36 @@ const ProductionList = () => {
           action: `Deleted Cutlist: ${originalJobData.cutlistName}`,
           previousData: originalJobData,
           updatedData: null,
+        });
+      } else if (actionType === "preprod") {
+        // Fetch the original job data
+        const originalResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const originalJobData = originalResponse.data;
+
+        // Send patch request to update
+        await axios.patch(
+          `${
+            import.meta.env.VITE_APP_ROUTE
+          }/productionLists/${selectedId}/preprod`,
+          {
+            jobStatustoMark: jobStatustoMark,
+          }
+        );
+
+        // Fetch the updated job data
+        const updatedResponse = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/productionLists/${selectedId}`
+        );
+        const updatedJobData = updatedResponse.data;
+
+        // Log the marked as preprod action
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Marked Job as in ${jobStatustoMark}: ${originalJobData.cutlistName}`,
+          previousData: originalJobData,
+          updatedData: updatedJobData,
         });
       } else if (actionType === "archive") {
         // Fetch the original job data
@@ -357,6 +394,7 @@ const ProductionList = () => {
         showArchived={showArchived}
         searchTerm={searchTerm}
         addedByList={addedby}
+        onPreprod={handlePrerod}
       />
 
       {/* Confirmation Modal */}
@@ -367,7 +405,9 @@ const ProductionList = () => {
         message={`Are you sure you want to ${
           actionType === "archiveOlder"
             ? "archive jobs older than specified days?"
-            : actionType + " this job?"
+            : actionType === "preprod"
+            ? "mark this job as PrePROD?"
+            : `${actionType} this job?`
         }`}
       />
 

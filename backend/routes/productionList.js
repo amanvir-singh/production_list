@@ -187,4 +187,35 @@ router.post("/names", async (req, res) => {
   }
 });
 
+// Mark as Preprod
+router.patch("/:id/preprod", async (req, res) => {
+  try {
+    const { jobStatustoMark } = req.body;
+
+    if (!jobStatustoMark) {
+      return res
+        .status(400)
+        .json({ message: "Missing jobStatustoMark in request body" });
+    }
+
+    const productionList = await ProductionList.findById(req.params.id);
+
+    if (!productionList) {
+      return res.status(404).json({ message: "Production List not found" });
+    }
+
+    // Update all materials' stockStatus
+    productionList.materials = productionList.materials.map((material) => ({
+      ...material.toObject(),
+      jobStatus: jobStatustoMark,
+    }));
+
+    const updatedList = await productionList.save();
+
+    res.json(updatedList);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

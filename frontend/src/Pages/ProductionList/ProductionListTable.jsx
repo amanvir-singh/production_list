@@ -22,9 +22,13 @@ const ProductionListTable = ({
   userRole,
   showArchived,
   addedByList,
+  onPreprod,
 }) => {
   const [stockStatuses, setStockStatuses] = useState([]);
   const [jobStatuses, setJobStatuses] = useState([]);
+  const defaultJobStatusName = jobStatuses?.find(
+    (status) => status.defaultForNew
+  )?.name;
 
   useEffect(() => {
     fetchStockStatuses();
@@ -97,6 +101,16 @@ const ProductionListTable = ({
     ...buttonStyle,
     backgroundColor: "#008CBA",
     color: "white",
+  };
+
+  const preprodButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: "rgb(244, 224, 11)",
+    color: "black",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: "4px auto",
   };
 
   return (
@@ -228,6 +242,7 @@ const ProductionListTable = ({
                           Delete
                         </button>
                       )}
+
                       {canArchive &&
                         (showArchived ? (
                           <button
@@ -244,6 +259,18 @@ const ProductionListTable = ({
                             Archive
                           </button>
                         ))}
+                      {canArchive &&
+                        materials?.some(
+                          (material) =>
+                            material.jobStatus === defaultJobStatusName
+                        ) && (
+                          <button
+                            onClick={() => onPreprod(list._id)}
+                            style={preprodButtonStyle}
+                          >
+                            Mark as Preprod
+                          </button>
+                        )}
                     </td>
                   </>
                 )}
