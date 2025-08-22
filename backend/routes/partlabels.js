@@ -226,14 +226,23 @@ router.get("/label-images/:partId", (req, res) => {
 
 const deriveGroupBase = (mprFileName) => {
   const parts = mprFileName.split("_");
-  if (parts.length < 4) return null;
-  const base = `${parts[0]}_${parts[1]}_${parts[2]}_${parts[3].slice(0, 2)}`;
+  let base = "";
+
+  for (let i = 0; i < parts.length; i++) {
+    if (i === parts.length - 1) {
+      base += parts[i].slice(0, -9);
+    } else {
+      base += parts[i];
+    }
+  }
+
   return base;
 };
 
 router.get("/label-data/:fileName", (req, res) => {
   const { fileName } = req.params;
   const base = deriveGroupBase(fileName);
+
   if (!base) {
     return res.status(400).json({ error: "Invalid MPR file name format" });
   }
@@ -268,6 +277,7 @@ router.get("/label-data/:fileName", (req, res) => {
     const partRefs = matchingCsvRows.map((line) => {
       const cols = line.split(";");
       const cutriteId = path.basename(cols[28], ".mpr");
+
       return {
         cutritePartId: cutriteId,
         rotation: cols[19],
