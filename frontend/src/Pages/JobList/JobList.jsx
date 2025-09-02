@@ -44,7 +44,16 @@ const JobList = () => {
           showArchived ? "/archived" : ""
         }`
       );
-      setJobLists(response.data);
+      let jobs = response.data;
+      // Sorting the jobs from latest to oldest if archived is true
+
+      if (showArchived) {
+        jobs = jobs.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      }
+
+      setJobLists(jobs);
     } catch (error) {
       console.error("Error fetching job lists:", error);
     }
@@ -272,7 +281,7 @@ const JobList = () => {
       {!showArchived ? (
         <h1>Job List</h1>
       ) : (
-        <h1 style={{ color: "red" }}>Job List (Archived)</h1>
+        <h1 style={{ color: "red" }}>Job List (Archived: Latest to Oldest)</h1>
       )}
       <div className="job-controls">
         <input

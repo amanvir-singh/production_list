@@ -70,7 +70,17 @@ const ProductionList = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_APP_ROUTE}${url}`
       );
-      setProductionLists(response.data);
+      let fetchedProductionLists = response.data;
+
+      // Sorting the production list from latest to oldest if archived is true
+
+      if (showArchived) {
+        fetchedProductionLists = fetchedProductionLists.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      }
+
+      setProductionLists(fetchedProductionLists);
     } catch (error) {
       console.error("Error fetching production lists:", error);
     }
@@ -344,7 +354,9 @@ const ProductionList = () => {
       {!showArchived ? (
         <h1>Production List</h1>
       ) : (
-        <h1 style={{ color: "red" }}>Production List (Archived)</h1>
+        <h1 style={{ color: "red" }}>
+          Production List (Archived: Latest to Oldest)
+        </h1>
       )}
       <div className="controls">
         <input
