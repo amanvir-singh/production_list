@@ -9,14 +9,14 @@
 {Part_Image}
 ^FO360,352
 {Barcode_Image}
-^FT64,90^A0N,43,30^FH\^FD{{Job_Name}}^FS
-^FT64,118^A0N,18,18^FH\^FD{{Work_Order_Name}}^FS
+^FT64,81^A0N,29,26^FH\^FD{{Job_Name}}^FS
+^FT64,118^A0N,30,24^FH\^FD{{Work_Order_Name}}^FS
 ^FT242,45^A0N,31,31^FB168,1,0,C^FH\^FD{{Edge_Top}}^FS
 ^FO64,127^GB480,0,5^FS
-^FT60,220^A0N,45,30^FH\^FD{{Item_No}}^FS
-^FT150,169^A0N,29,33^FH\^FD{{Part_Name}}^FS
-^FT150,205^A0N,29,31^FH\^FDMat : {{Material_Code}}^FS
-^FT150,241^A0N,29,29^FH\^FDCut Dim: {{Length}} x {{Width}}^FS
+^FT64,169^A0N,29,26^FH\^FD{{Item_No}}^FS
+^FT146,169^A0N,29,33^FH\^FD{{Part_Name}}^FS
+^FT64,205^A0N,29,31^FH\^FDMat : {{Material_Code}}^FS
+^FT64,241^A0N,29,31^FH\^FDCut Dim: {{Length}} x {{Width}}^FS
 ^FT64,280^A0N,25,26^FH,2\^FDNote: {{Note}}^FS
 ^FO64,296^GB480,0,5^FS
 ^FT64,340^A0N,29,24^FH\^FDBack/Side Machining:  {{Back_Machining}}/{{Side_Machining}}^FS

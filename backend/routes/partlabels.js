@@ -306,7 +306,7 @@ router.get("/label-data/:fileName", (req, res) => {
           partName: parts[29],
           partId: parts[19].replace(/\.wmf$/i, ""),
           cutritePartId: ref.cutritePartId,
-          size: `${parts[33]} x ${parts[32]}`,
+          size: `${parts[2]} x ${parts[3]}`,
           material: parts[47],
           Note: parts[40],
           Back_Machining: parts[35] ? parts[35] : "NA",
