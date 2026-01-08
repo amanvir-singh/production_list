@@ -36,7 +36,7 @@ connectDB();
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      "http://productionmanager.local:8080", // Your custom domain
+      "http://productionmanager.local:8080",
       "http://192.168.78.78:8080", // Backend IP address
       "http://localhost:5173", // Localhost for development
       "http://localhost:4173", // Localhost for build preview

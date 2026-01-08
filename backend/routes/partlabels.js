@@ -21,7 +21,7 @@ const EXCLUDED_FOLDERS = [
   "Models3d",
 ];
 
-const PRINTER_IP = "192.168.78.207";
+const PRINTER_IP = "192.168.78.223";
 const PRINTER_PORT = 9100;
 
 const ZPL_TEMPLATE = readFileSync(
