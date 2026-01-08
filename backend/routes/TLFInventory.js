@@ -12,30 +12,45 @@ const TLFInventory = mongoose.model(
   "TLFInventory"
 );
 
-const saveDataToMongoDB = async (data) => {
+const saveDataToMongoDB = async (boardsqldata, qtysqldata) => {
   try {
     const fetchedAt = new Date();
 
     await TLFInventory.deleteMany({});
 
-    // Process each record from SQL and map it to the board schema
-    const boardsData = data.map((record) => ({
-      ID: record.IdNr, // Mapping SQL column 'IdNr' to 'ID'
-      BoardCode: record.Identnummer, // Mapping 'Identnummer' to 'BoardCode'
-      Length: Decimal128.fromString((record.Laenge / 1000).toString()),
-      Width: Decimal128.fromString((record.Breite / 1000).toString()),
-      Thickness: Decimal128.fromString((record.Dicke / 1000).toString()),
-      Infeeds: record.AnzahlEin, // Mapping 'AnzahlEin' to 'Infeeds'
-      Outfeeds: record.AnzahlAus, // Mapping 'AnzahlAus' to 'Outfeeds'
-      TotalQty: record.AnzahlEin - record.AnzahlAus, // Calculating Model Qty
-    }));
+    // Build qty map: Identnummer -> count of entries, excluding Platznummer 1 and 2
+    const qtyByBoardCode = new Map();
+    for (let i = 0; i < qtysqldata.length; i++) {
+      const row = qtysqldata[i];
+      const platz = Number(row.Platznummer);
+
+      if (platz === 1 || platz === 2) continue;
+
+      const boardCode = row.Identnummer;
+      qtyByBoardCode.set(boardCode, (qtyByBoardCode.get(boardCode) || 0) + 1);
+    }
+
+    // Map Ident table rows to boards
+    const boardsData = boardsqldata.map((record) => {
+      const boardCode = record.Identnummer;
+      const totalQty = qtyByBoardCode.get(boardCode) || 0;
+
+      return {
+        ID: record.IdNr,
+        BoardCode: boardCode,
+        Length: Decimal128.fromString((record.Laenge / 1000).toString()),
+        Width: Decimal128.fromString((record.Breite / 1000).toString()),
+        Thickness: Decimal128.fromString((record.Dicke / 1000).toString()),
+        TotalQty: totalQty,
+      };
+    });
 
     const tlfInventory = new TLFInventory({
       FetchedAt: fetchedAt,
       boards: boardsData,
     });
 
-    await tlfInventory.save(); // Save the document
+    await tlfInventory.save();
     console.log("TLF Inventory successfully saved");
   } catch (err) {
     console.error("Error saving TLF Inventory to Database:", err);
@@ -57,11 +72,14 @@ router.get("/", async (req, res) => {
 
 router.get("/fetch-now", async (req, res) => {
   try {
-    // Fetch data from TLF
-    const sqlData = await FetchDatafromTLF();
+    const [boardsqldata, qtysqldata] = await Promise.all([
+      FetchDatafromTLF("dbo.Ident"),
+      FetchDatafromTLF("dbo.lagen"),
+    ]);
 
-    // Save the fetched data to MongoDB
-    await saveDataToMongoDB(sqlData);
+    await saveDataToMongoDB(boardsqldata, qtysqldata);
+    console.log(qtysqldata[19]);
+    console.log(qtysqldata[10]);
 
     res.status(200).json({
       message: "TLF Inventory successfully fetched and saved",
@@ -74,5 +92,4 @@ router.get("/fetch-now", async (req, res) => {
     });
   }
 });
-
 module.exports = router;

@@ -13,13 +13,15 @@ const config = {
   },
 };
 
-async function FetchDatafromTLF() {
+async function FetchDatafromTLF(table_name) {
   try {
     // Connect to the database
     const pool = await sql.connect(config);
 
     // Query the database
-    const result = await pool.request().query("SELECT * FROM dbo.Ident");
+    const query = `SELECT * FROM ${table_name}`;
+    console.log(query);
+    const result = await pool.request().query(query);
 
     return result.recordset;
   } catch (err) {
