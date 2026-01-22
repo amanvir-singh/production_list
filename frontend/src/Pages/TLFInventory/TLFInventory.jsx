@@ -5,86 +5,89 @@ import { AuthContext } from "../../Components/AuthContext";
 
 const TLFInventory = () => {
   const [inventoryData, setInventoryData] = useState([]);
-  const [fixersData, setFixersData] = useState([]); // Added fixersData state
   const [isHideZeroQty, setIsHideZeroQty] = useState(false);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useContext(AuthContext);
   const printRef = useRef();
-  const [isFetching, setIsFetching] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
+  // Initial load from REST (latest snapshot)
   useEffect(() => {
-    fetchTLFInventory(); // Fetch inventory and fixers on component mount
+    const loadInitial = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_APP_ROUTE}/TLFInventory`
+        );
+        const doc = res.data;
+        if (doc) {
+          setInventoryData(doc.boards || []);
+          setLastFetchedAt(
+            doc.FetchedAt ? new Date(doc.FetchedAt).toLocaleString() : null
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching initial TLF Inventory data:", error);
+        setErrorModalOpen(true);
+      }
+    };
+    loadInitial();
   }, []);
 
-  const fetchTLFInventory = async () => {
-    try {
-      const inventoryResponse = await axios.get(
-        `${import.meta.env.VITE_APP_ROUTE}/TLFInventory`
-      );
-      const boards = inventoryResponse.data[0]?.boards || [];
-      setInventoryData(boards);
-      setLastFetchedAt(
-        new Date(inventoryResponse.data[0]?.FetchedAt).toLocaleString()
-      );
+  // SSE subscription for raw snapshot updates
+  useEffect(() => {
+    const url = `${import.meta.env.VITE_APP_ROUTE}/tlf/stream`;
+    const es = new EventSource(url);
 
-      // Fetch the fixers data
-      const fixersResponse = await axios.get(
-        `${import.meta.env.VITE_APP_ROUTE}/tlfinventoryfixer`
-      );
-      setFixersData(fixersResponse.data || []);
-
-      // Update the inventory data based on fixers
-      const updatedInventoryData = boards.map((board) => {
-        // Find the corresponding fixer for the board (if any)
-        const fixer = fixersResponse.data.find(
-          (fixerItem) => fixerItem.BoardCode === board.BoardCode
+    es.addEventListener("tlf_snapshot_raw", (event) => {
+      try {
+        const snapshot = JSON.parse(event.data);
+        setInventoryData(snapshot.boards || []);
+        setLastFetchedAt(
+          snapshot.FetchedAt
+            ? new Date(snapshot.FetchedAt).toLocaleString()
+            : null
         );
-        if (fixer) {
-          // Adjust the board's TotalQty based on the fixer quantity
-          board.TotalQty += fixer.QtytoFix;
-        }
+      } catch (e) {
+        console.error("Error parsing tlf_snapshot_raw:", e);
+      }
+    });
 
-        return board;
-      });
+    es.addEventListener("tlf_sync_error", (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        console.warn("TLF sync error:", payload);
+        setErrorModalOpen(true);
+      } catch (e) {
+        console.error("Error parsing tlf_sync_error:", e);
+      }
+    });
 
-      setInventoryData(updatedInventoryData);
-    } catch (error) {
-      console.error("Error fetching TLF Inventory data:", error);
-      setErrorModalOpen(true);
-    }
-  };
+    es.onerror = (err) => {
+      console.error("TLF SSE error:", err);
+    };
 
-  const fetchNow = async () => {
-    setIsFetching(true);
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_APP_ROUTE}/TLFInventory/fetch-now`
-      );
-      fetchTLFInventory();
-      setIsFetching(false);
-    } catch (error) {
-      console.error("Error fetching latest data:", error);
-      setErrorModalOpen(true);
-      setIsFetching(false);
-    }
-  };
+    return () => es.close();
+  }, []);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  const filteredData = inventoryData.filter(
-    (item) =>
-      (!isHideZeroQty || item.TotalQty !== 0) &&
-      (item.BoardCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.Length?.$numberDecimal.toString().includes(searchQuery) ||
-        item.Width?.$numberDecimal.toString().includes(searchQuery) ||
-        item.Thickness?.$numberDecimal.toString().includes(searchQuery) ||
-        item.TotalQty.toString().includes(searchQuery))
-  );
+  const filteredData = inventoryData.filter((item) => {
+    const q = searchQuery.toLowerCase();
+    const matchesText =
+      item.BoardCode?.toLowerCase().includes(q) ||
+      item.Length?.$numberDecimal?.toString().includes(searchQuery) ||
+      item.Width?.$numberDecimal?.toString().includes(searchQuery) ||
+      item.Thickness?.$numberDecimal?.toString().includes(searchQuery) ||
+      item.TotalQty?.toString().includes(searchQuery);
+
+    const qtyOk = !isHideZeroQty || item.TotalQty !== 0;
+
+    return qtyOk && matchesText;
+  });
 
   const handlePrint = () => {
     window.print();
@@ -95,9 +98,10 @@ const TLFInventory = () => {
   };
 
   const getLastFetchedStyle = () => {
+    if (!lastFetchedAt) return {};
     const lastFetchedTime = new Date(lastFetchedAt);
     const currentTime = new Date();
-    const timeDifference = (currentTime - lastFetchedTime) / 1000 / 60 / 60; // in hours
+    const timeDifference = (currentTime - lastFetchedTime) / 1000 / 60 / 60; // hours
 
     if (timeDifference > 6) {
       return {
@@ -124,6 +128,7 @@ const TLFInventory = () => {
         {user && <p>Printed by: {user.username}</p>}
       </div>
       <h2>TLF Inventory</h2>
+
       <div className="controls">
         <input
           type="text"
@@ -131,9 +136,7 @@ const TLFInventory = () => {
           value={searchQuery}
           onChange={handleSearch}
         />
-        <button className="btn-fetch-now" onClick={fetchNow}>
-          {!isFetching ? "Fetch Now" : "Fetching..."}
-        </button>
+
         <label className="hide-zero-qty">
           <input
             type="checkbox"
@@ -142,7 +145,11 @@ const TLFInventory = () => {
           />
           <span>Hide Inventory with Qty = 0</span>
         </label>
-        <p style={getLastFetchedStyle()}>Fetched At: {lastFetchedAt}</p>
+
+        <p style={getLastFetchedStyle()}>
+          Fetched At: {lastFetchedAt || "N/A"} (every 5 min.)
+        </p>
+
         <button className="btn-print" onClick={handlePrint}>
           Print
         </button>
@@ -173,9 +180,10 @@ const TLFInventory = () => {
                 }}
               >
                 <td>
-                  {item.BoardCode.split(
+                  {item.BoardCode?.split(
                     new RegExp(`(${searchQuery})`, "gi")
                   ).map((part, i) =>
+                    searchQuery &&
                     part.toLowerCase() === searchQuery.toLowerCase() ? (
                       <span key={i} style={{ backgroundColor: "yellow" }}>
                         {part}
@@ -201,7 +209,6 @@ const TLFInventory = () => {
         </tbody>
       </table>
 
-      {/* Error Modal */}
       {errorModalOpen && (
         <div className="error-modal">
           <div className="error-modal-content">

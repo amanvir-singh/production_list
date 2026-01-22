@@ -48,6 +48,9 @@ const Header = () => {
               <a href="/preprod">PreProd</a>
             </li>
             <li>
+              <a href="/InventoryHome">Inventory</a>
+            </li>
+            <li>
               <a href="/InventoryTLF">TLF Inventory</a>
             </li>
             <li>

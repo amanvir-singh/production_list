@@ -14,6 +14,11 @@ const TLFInventoryFixerSchema = require("./models/TLFInventoryFixer");
 const jobListSchema = require("./models/jobList");
 const jobListMaterialSchema = require("./models/jobListMaterial");
 const edgebandSchema = require("./models/edgeBand");
+const warehouseInventorySchema = require("./models/warehouseInventory");
+const TLFOrphanPanelSchema = require("./models/TLFOrphanPanel");
+const TLFOutfeedLogSchema = require("./models/TLFOutfeedLog");
+const TLFOutfeedCursorSchema = require("./models/TLFOutfeedCursor");
+const materialOrderSchema = require("./models/materialOrder");
 
 function initializeModels() {
   console.log("Checking for Models...");
@@ -44,6 +49,26 @@ function initializeModels() {
     jobList: { name: "jobList", schema: jobListSchema },
     jobListMaterial: { name: "jobListMaterial", schema: jobListMaterialSchema },
     edgeBand: { name: "edgeBand", schema: edgebandSchema },
+    warehouseInventory: {
+      name: "warehouseInventory",
+      schema: warehouseInventorySchema,
+    },
+    TLFOrphanPanel: {
+      name: "TLFOrphanPanel",
+      schema: TLFOrphanPanelSchema,
+    },
+    TLFOutfeedLog: {
+      name: "TLFOutfeedLog",
+      schema: TLFOutfeedLogSchema,
+    },
+    TLFOutfeedCursor: {
+      name: "TLFOutfeedCursor",
+      schema: TLFOutfeedCursorSchema,
+    },
+    materialOrders: {
+      name: "materialOrders",
+      schema: materialOrderSchema,
+    },
   };
 
   Object.entries(models).forEach(([key, { name, schema }]) => {
@@ -71,6 +96,11 @@ function initializeModels() {
     jobList: models.jobList.model,
     jobListMaterial: models.jobListMaterial.model,
     edgeBand: models.edgeBand.model,
+    warehouseInventory: models.warehouseInventory.model,
+    TLFOrphanPanel: models.TLFOrphanPanel.model,
+    TLFOutfeedLog: models.TLFOutfeedLog.model,
+    TLFOutfeedCursor: models.TLFOutfeedCursor.model,
+    MaterialOrder: models.materialOrders.model,
   };
 }
 
@@ -91,5 +121,10 @@ module.exports = {
     jobListSchema,
     jobListMaterialSchema,
     edgebandSchema,
+    warehouseInventorySchema,
+    TLFOrphanPanelSchema,
+    TLFOutfeedLogSchema,
+    TLFOutfeedCursorSchema,
+    materialOrderSchema,
   },
 };

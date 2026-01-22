@@ -1,0 +1,262 @@
+.inventory-list {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 20px;
+  table-layout: auto;
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .inventory-modal__list-item {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 10px;
+
+    &:hover {
+      background: #f7f7f7;
+      border-color: #cfcfcf;
+    }
+  }
+
+  .inventory-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .inventory-list-header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .search-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 20px;
+    width: 300px;
+  }
+
+  .refresh-button,
+  .sort-button {
+    display: inline-block;
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  .sort-button {
+    background-color: #9c27b0;
+  }
+
+  .loading-state,
+  .error-state,
+  .empty-state {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .error-state {
+    color: #f44336;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 5px;
+      text-align: center;
+      font-size: 18px;
+      white-space: normal;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .edit-button,
+    .delete-button {
+      display: inline-block;
+      height: 32px;
+      color: white;
+      padding: 6px 12px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-right: 5px;
+      font-size: 16px;
+    }
+
+    .edit-button {
+      background-color: #2196f3;
+      border: none;
+      cursor: pointer;
+    }
+
+    .delete-button {
+      background-color: #f44336;
+      border: none;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+  }
+
+  .filter-button {
+    display: inline-block;
+    background-color: #607d8b;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+
+    &--active {
+      background-color: #ff9800;
+      box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+    }
+  }
+}
+
+/* Generic modal overlay for inventory list (sort/filter/delete) */
+.inventory-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.inventory-modal {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 20px 24px;
+  min-width: 320px;
+  max-width: 480px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04);
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .inventory-modal__body {
+    margin-bottom: 16px;
+  }
+
+  .inventory-modal__radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+
+    input[type="radio"] {
+      accent-color: #2196f3;
+    }
+  }
+
+  .inventory-modal__field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+
+    label {
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    select {
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+      background-color: #fff;
+    }
+  }
+
+  .inventory-modal__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+
+    .primary-btn {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+
+      &:hover {
+        background-color: #1976d2;
+      }
+    }
+
+    .secondary-btn {
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+
+      &:hover {
+        background-color: #d5d5d5;
+      }
+    }
+
+    .confirm-delete-btn {
+      margin: 0 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #f44336;
+      color: white;
+      font-size: 15px;
+    }
+
+    .cancel-delete-btn {
+      margin: 0 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #ccc;
+      font-size: 15px;
+    }
+  }
+}

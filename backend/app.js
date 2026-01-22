@@ -20,6 +20,10 @@ const jobListRoutes = require("./routes/jobList");
 const jobListMaterialRoutes = require("./routes/jobListMaterial");
 const edgeBandRoutes = require("./routes/edgeBand");
 const partsLabelsRoutes = require("./routes/partlabels");
+const warehouseInventoryRoutes = require("./routes/warehouseInventory");
+const materialOrderRoutes = require("./routes/materialOrder");
+const tlfSSE = require("./routes/TLFSSE");
+const tlfSyncService = require("./services/tlfSync.service");
 
 const app = express();
 
@@ -79,6 +83,18 @@ app.use("/joblist", jobListRoutes);
 app.use("/joblistmaterial", jobListMaterialRoutes);
 app.use("/edgeband", edgeBandRoutes);
 app.use("/partlabels", partsLabelsRoutes);
+app.use("/warehouseInventory", warehouseInventoryRoutes);
+app.use("/materialOrders", materialOrderRoutes);
+app.use("/tlf", tlfSSE);
+
+// Run Once on startup
+tlfSyncService.syncOnce();
+
+// Then every 5 minutes
+setInterval(() => {
+  tlfSyncService.syncOnce();
+}, 5 * 60 * 1000);
+
 // const PORT = process.env.PORT || 3001;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 

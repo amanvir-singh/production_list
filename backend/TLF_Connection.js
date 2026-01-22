@@ -20,7 +20,6 @@ async function FetchDatafromTLF(table_name) {
 
     // Query the database
     const query = `SELECT * FROM ${table_name}`;
-    console.log(query);
     const result = await pool.request().query(query);
 
     return result.recordset;
@@ -30,4 +29,19 @@ async function FetchDatafromTLF(table_name) {
   }
 }
 
-module.exports = FetchDatafromTLF;
+async function FetchDatafromTLFWithQuery(query) {
+  try {
+    // Connect to the database
+    const pool = await sql.connect(config);
+
+    // Query the database
+    const result = await pool.request().query(query);
+
+    return result.recordset;
+  } catch (err) {
+    console.error("Error fetching data: ", err);
+    throw err;
+  }
+}
+
+module.exports = { FetchDatafromTLF, FetchDatafromTLFWithQuery };
