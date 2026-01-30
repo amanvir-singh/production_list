@@ -1,0 +1,143 @@
+.orphan-panels {
+  padding: 1rem;
+
+  .search-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 20px;
+    width: 300px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    & > table {
+      width: 100%;
+      border-collapse: collapse;
+
+      & > thead {
+        background-color: #f8f9fa;
+        th {
+          padding: 1rem;
+          text-align: left;
+          font-weight: 600;
+          color: #444;
+          border-bottom: 1px solid #dee2e6;
+        }
+      }
+
+      & > tbody > tr.panel-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+        
+        &:hover {
+          background-color: #f1f3f5;
+        }
+
+        &.expanded {
+          background-color: #e9ecef;
+        }
+
+        td {
+          padding: 1rem;
+          border-bottom: 1px solid #eee;
+        }
+      }
+    }
+  }
+
+  .events-section {
+    padding: 1rem 2rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    
+    .tree-root {
+        border-left: 2px solid #ccc;
+        margin-left: 10px;
+        padding-left: 10px;
+    }
+  }
+
+  .job-group {
+    margin-bottom: 0.5rem;
+
+    .job-header {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 0.5rem;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      
+      &:hover {
+        background-color: #fafafa;
+        border-color: #ccc;
+      }
+
+      .toggle-icon {
+        margin-right: 0.5rem;
+        font-size: 0.8rem;
+        width: 1rem;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .job-name {
+        font-weight: 600;
+        margin-right: 1rem;
+        color: #333;
+      }
+
+      .job-qty {
+        font-size: 0.9rem;
+        color: #666;
+        background: #eee;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    }
+
+    .job-events {
+        margin-top: 5px;
+        margin-left: 20px;
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: white;
+            
+            th, td {
+                padding: 6px 10px;
+                border: 1px solid #eee;
+                text-align: left;
+            }
+            
+            th {
+                background-color: #fce4ec; // Distinct header for job events
+                color: #880e4f;
+            }
+        }
+    }
+  }
+}

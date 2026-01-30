@@ -51,9 +51,6 @@ const Header = () => {
               <a href="/InventoryHome">Inventory</a>
             </li>
             <li>
-              <a href="/InventoryTLF">TLF Inventory</a>
-            </li>
-            <li>
               <a href="/jobList">Job List</a>
             </li>
             <li>

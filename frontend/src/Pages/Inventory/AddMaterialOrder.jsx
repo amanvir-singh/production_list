@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import Select from "react-select";
 import "../../css/Inventory/AddMaterialOrder.scss";
 import { AuthContext } from "../../Components/AuthContext";
 import ErrorModal from "../../Components/ErrorModal";
@@ -18,7 +19,7 @@ const AddMaterialOrder = ({
   const [backendError, setBackendError] = useState("");
 
   // Form Fields
-  const [selectedIdentifier, setSelectedIdentifier] = useState(""); // The value in the dropdown
+  const [selectedIdentifier, setSelectedIdentifier] = useState("");
   const [boardCode, setBoardCode] = useState("");
   const [supplier, setSupplier] = useState("");
   const [finish, setFinish] = useState("");
@@ -50,10 +51,6 @@ const AddMaterialOrder = ({
   // Initialize data for Edit mode
   useEffect(() => {
     if (isEdit && initialData && warehouseInventory.length > 0) {
-      // Find the identifying key used (try to match boardCode)
-      // Note: If original creation used aggregation key, we might need to find which one matches.
-      // But for edit, we primarily trust the saved data.
-      // However, to make the dropdown work, we need to find if there is a matching entry.
       setBoardCode(initialData.boardCode);
       setSupplier(initialData.supplier);
       setFinish(initialData.finish);
@@ -66,15 +63,11 @@ const AddMaterialOrder = ({
       }
       setStatus(initialData.status);
 
-      // Try to set the identifier in dropdown.
-      // We look for an item with matching boardCode. 
-      // If found, what identifier does it use?
       const match = warehouseInventory.find(w => w.boardCode === initialData.boardCode);
       if(match) {
          if(match.aggregationKey) setSelectedIdentifier(match.aggregationKey);
          else setSelectedIdentifier(match.boardCode);
       } else {
-         // Fallback if item no longer exists in current inventory, just show boardCode
          setSelectedIdentifier(initialData.boardCode); 
       }
     }
@@ -83,7 +76,7 @@ const AddMaterialOrder = ({
   // Compute unique dropdown options
   const dropdownOptions = useMemo(() => {
     const options = new Set();
-    const optionMap = new Map(); // key -> example item (to help with finding details later if needed)
+    const optionMap = new Map();
 
     warehouseInventory.forEach((item) => {
       const key = item.aggregationKey ? item.aggregationKey : item.boardCode;
@@ -93,11 +86,16 @@ const AddMaterialOrder = ({
       }
     });
 
-    return Array.from(options).sort();
+    return Array.from(options).sort().map(opt => ({ value: opt, label: opt }));
   }, [warehouseInventory]);
 
-  const handleIdentifierChange = (e) => {
-    const value = e.target.value;
+
+
+
+
+
+  const handleIdentifierChange = (selectedOption) => {
+    const value = selectedOption ? selectedOption.value : "";
     setSelectedIdentifier(value);
 
     if (!value) {
@@ -110,8 +108,6 @@ const AddMaterialOrder = ({
       return;
     }
 
-    // Find corresponding item in warehouseInventory
-    // We prioritize items that match this key as aggregationKey OR boardCode
     const match = warehouseInventory.find(item => 
         (item.aggregationKey && item.aggregationKey === value) ||
         (!item.aggregationKey && item.boardCode === value)
@@ -124,10 +120,7 @@ const AddMaterialOrder = ({
       setThickness(match.thickness);
       setFormat(match.format);
 
-      // Finish Extra logic
       if (match.aggregationKey && match.aggregationKey === value) {
-          // Extract finish from aggregation key: between second and third underscore
-          // Example: T_PM115_G1S_.75_5X9 -> G1S (index 2)
           const parts = value.split('_');
           if (parts.length > 2) {
               setFinish(parts[2]);
@@ -149,7 +142,7 @@ const AddMaterialOrder = ({
     }
 
     const payload = {
-        boardCode,
+        boardCode : selectedIdentifier,
         supplier,
         finish,
         code,
@@ -173,7 +166,7 @@ const AddMaterialOrder = ({
             );
         }
 
-        if (onSuccess) onSuccess();
+        if (typeof onSuccess === "function") onSuccess();
     } catch (error) {
         console.error("Error saving material order:", error);
         setBackendError(error.response?.data?.message || "Failed to save order.");
@@ -195,26 +188,24 @@ const AddMaterialOrder = ({
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="materialSelect">Select Material (Board Code):</label>
-              <select
+              <Select
                 id="materialSelect"
-                value={selectedIdentifier}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                value={dropdownOptions.find(opt => opt.value === selectedIdentifier) || null}
                 onChange={handleIdentifierChange}
-                required
-                disabled={isEdit} 
-              >
-                <option value="">-- Select Material --</option>
-                {dropdownOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+                options={dropdownOptions}
+                isClearable
+                isDisabled={isEdit}
+                placeholder="-- Select Material --"
+                required={!isEdit}
+              />
             </div>
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>Board Code:</label>
               <input type="text" value={boardCode} disabled />
-            </div>
+            </div> */}
 
             <div className="form-group">
               <label>Supplier:</label>

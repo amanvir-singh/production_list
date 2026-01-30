@@ -65,6 +65,31 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// Add stock
+router.put("/add-stock/:boardCode", async (req, res) => {
+  try {
+    const { qtyToAdd } = req.body;
+    
+    if (!qtyToAdd || isNaN(qtyToAdd)) {
+        return res.status(400).json({ message: "Invalid quantity provided" });
+    }
+
+    const inventory = await WarehouseInventory.findOneAndUpdate(
+      { boardCode: req.params.boardCode },
+      { $inc: { warehouseQty: Number(qtyToAdd) } },
+      { new: true }
+    );
+
+    if (!inventory) {
+      return res.status(404).json({ message: "Inventory record not found" });
+    }
+    
+    res.json(inventory);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // Delete
 router.delete("/:id", async (req, res) => {
   try {

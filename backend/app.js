@@ -24,6 +24,8 @@ const warehouseInventoryRoutes = require("./routes/warehouseInventory");
 const materialOrderRoutes = require("./routes/materialOrder");
 const tlfSSE = require("./routes/TLFSSE");
 const tlfSyncService = require("./services/tlfSync.service");
+const outfeedLogsRoutes = require("./routes/outfeedLogs");
+const orphanPanelsRoutes = require("./routes/orphanPanels");
 
 const app = express();
 
@@ -86,6 +88,8 @@ app.use("/partlabels", partsLabelsRoutes);
 app.use("/warehouseInventory", warehouseInventoryRoutes);
 app.use("/materialOrders", materialOrderRoutes);
 app.use("/tlf", tlfSSE);
+app.use("/outfeedLogs", outfeedLogsRoutes);
+app.use("/orphanPanels", orphanPanelsRoutes);
 
 // Run Once on startup
 tlfSyncService.syncOnce();

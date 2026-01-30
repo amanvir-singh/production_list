@@ -30,85 +30,6 @@ const TLFOrphanPanel = mongoose.model(
   schemas.TLFOrphanPanelSchema,
   "TLFOrphanPanel",
 );
-const MaterialOrder = mongoose.model(
-  "materialOrders",
-  schemas.materialOrderSchema,
-  "materialOrders",
-);
-
-// Helper to recalc totals
-async function recalculateWarehouseTotals() {
-  const allWhDocs = await WarehouseInventory.find({}).lean();
-  const allOrders = await MaterialOrder.find({ status: "On Order" }).lean();
-
-  if (!allWhDocs.length) return;
-
-  const whDocMap = new Map();
-  const aggKeyToPrimaryBC = new Map();
-  const bcToAggKey = new Map();
-
-  for (const doc of allWhDocs) {
-    whDocMap.set(doc.boardCode, { ...doc, onOrderQty: 0 });
-
-    if (doc.boardCode && doc.aggregationKey) {
-      bcToAggKey.set(doc.boardCode, doc.aggregationKey);
-      if (!aggKeyToPrimaryBC.has(doc.aggregationKey)) {
-        aggKeyToPrimaryBC.set(doc.aggregationKey, doc.boardCode);
-      }
-    }
-  }
-
-  for (const order of allOrders) {
-    if (!order.boardCode) continue;
-
-    let targetBC = order.boardCode;
-    const aggKey = bcToAggKey.get(order.boardCode);
-
-    if (aggKey) {
-      const primary = aggKeyToPrimaryBC.get(aggKey);
-      if (primary) targetBC = primary;
-    }
-
-    const whItem = whDocMap.get(targetBC);
-    if (whItem) {
-      whItem.onOrderQty += (Number(order.orderedQty) || 0);
-    }
-  }
-
-
-  const ops = [];
-  const now = new Date();
-
-  for (const doc of whDocMap.values()) {
-    const warehouseQty = Number(doc.warehouseQty) || 0;
-    const tlfQty = Number(doc.tlfQty) || 0;
-    const reservedQty = Number(doc.reservedQty) || 0;
-    const onOrderQty = doc.onOrderQty; 
-
-    const onHandQty = warehouseQty + tlfQty;
-    const availableQty = onHandQty - reservedQty;
-    const projectedQty = availableQty + onOrderQty;
-
-    ops.push({
-      updateOne: {
-        filter: { _id: doc._id },
-        update: {
-          $set: {
-            onOrderQty,
-            onHandQty,
-            availableQty,
-            projectedQty,
-            updatedAt: now,
-          },
-        },
-      },
-    });
-  }
-
-  if (ops.length > 0) {
-    await WarehouseInventory.bulkWrite(ops, { ordered: false });
-  }
-}
 
 function aggKeyForBoardCode(boardCode, aggKeyMap) {
   const k = aggKeyMap.get(boardCode);
@@ -597,9 +518,6 @@ async function syncOnce() {
 
     // 7d) write outfeed logs
     await insertOutfeedLogs(outfeedLogs);
-
-    // 7f) Recalculate Warehouse Totals
-    await recalculateWarehouseTotals();
 
     // 7e) advance cursor
     if (

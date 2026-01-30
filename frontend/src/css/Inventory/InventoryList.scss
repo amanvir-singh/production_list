@@ -4,6 +4,58 @@
   padding: 20px;
   table-layout: auto;
 
+  @media print {
+    padding: 0;
+    max-width: 100%;
+    zoom: 0.7;
+
+    .print-header {
+      display: block !important;
+      text-align: right;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    h1 {
+            margin-bottom: 5px;
+            font-size: 40px;
+        }
+
+    .inventory-list-header,
+    .loading-state,
+    .error-state {
+      display: none !important;
+    }
+
+    table {
+        th:last-child,
+        td:last-child {
+            display: none !important; 
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            display: none !important; 
+        }
+        
+      
+        th, td {
+            font-size: 15px !important;
+            padding: 4px 4px !important;
+            border: 0.5px solid #000 !important;
+            border-style: solid !important;
+        }
+    }
+
+    .tlf-only-section {
+        display: none !important;
+    }
+  }
+
+  .print-header {
+    display: none;
+  }
+
   h1 {
     text-align: center;
     margin-bottom: 20px;
@@ -46,7 +98,8 @@
   }
 
   .refresh-button,
-  .sort-button {
+  .sort-button,
+  .print-button {
     display: inline-block;
     background-color: #2196f3;
     color: white;
@@ -60,6 +113,10 @@
 
   .sort-button {
     background-color: #9c27b0;
+  }
+
+  .print-button {
+    background-color: #795548;
   }
 
   .loading-state,
@@ -141,7 +198,7 @@
   }
 }
 
-/* Generic modal overlay for inventory list (sort/filter/delete) */
+
 .inventory-modal-overlay {
   position: fixed;
   inset: 0;

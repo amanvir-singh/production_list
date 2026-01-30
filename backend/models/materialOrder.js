@@ -31,6 +31,9 @@ const materialOrderSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    orderedDate: {
+      type: Date,
+    },
     anticipatedDate: {
       type: Date,
     },

@@ -1,13 +1,22 @@
 import InventoryList from "./InventoryList";
 import TLFInventory from "../TLFInventory/TLFInventory";
 import AddInventoryMaterial from "./AddInventoryMaterial";
+import MaterialonOrder from "./MaterialonOrder";
+import OrderHistory from "./OrderHistory";
+import MaterialtoOrder from "./MaterialtoOrder";
 import AddMaterialOrder from "./AddMaterialOrder";
+import AddStock from "./AddStock";
+import OutfeedLogs from "./OutfeedLogs";
+import OrphanPanels from "./OrphanPanels";
 import "../../css/Inventory/InventoryHome.scss";
-import { useState } from "react";
-
+import { useState, useContext } from "react";
+import { AuthContext } from "../../Components/AuthContext";
 const InventoryHome = () => {
   const [activeView, setActiveView] = useState("warehouse");
   const [editingInventory, setEditingInventory] = useState(null);
+  const { user } = useContext(AuthContext);
+
+  const canAccessButtons = user.role === "Editor" || user.role === "admin";
 
   const handleEditInventory = (row) => {
     setEditingInventory(row);
@@ -20,12 +29,14 @@ const InventoryHome = () => {
         return <InventoryList onEdit={handleEditInventory} />;
       case "tlf":
         return <TLFInventory />;
+      case "materialToOrder":
+        return <MaterialtoOrder />;
       case "materialOnOrder":
-        return <div>Material on Order (coming soon)</div>;
+        return <MaterialonOrder />;
       case "orderHistory":
-        return <div>Order History (coming soon)</div>;
+        return <OrderHistory />;
       case "createOrder":
-        return <AddMaterialOrder />;
+        return <AddMaterialOrder onSuccess={() => setActiveView("materialToOrder")}/>;
       case "addMaterial":
         return (
           <AddInventoryMaterial onSuccess={() => setActiveView("warehouse")} />
@@ -45,6 +56,14 @@ const InventoryHome = () => {
             }}
           />
         );
+      case "addStock":
+        return (
+          <AddStock onSuccess={() => setActiveView("warehouse")} />
+        );
+      case "outfeedLogs":
+        return <OutfeedLogs />;
+      case "orphanPanels":
+        return <OrphanPanels />;
       default:
         return <InventoryList onEdit={handleEditInventory} />;
     }
@@ -63,7 +82,7 @@ const InventoryHome = () => {
             <ul>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
+                  className={`inventory-header__nav-btn ${activeView === 'warehouse' ? 'active' : ''}`}
                   onClick={() => setActiveView("warehouse")}
                 >
                   Warehouse Inventory
@@ -71,7 +90,7 @@ const InventoryHome = () => {
               </li>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
+                  className={`inventory-header__nav-btn ${activeView === 'tlf' ? 'active' : ''}`}
                   onClick={() => setActiveView("tlf")}
                 >
                   TLF
@@ -79,7 +98,25 @@ const InventoryHome = () => {
               </li>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
+                  className={`inventory-header__nav-btn ${activeView === 'createOrder' ? 'active' : ''}`}
+                  onClick={() => setActiveView("createOrder")}
+                  disabled={!canAccessButtons}
+                  style={!canAccessButtons ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                >
+                  Create Order
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'materialToOrder' ? 'active' : ''}`}
+                  onClick={() => setActiveView("materialToOrder")}
+                >
+                  Material to Order
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'materialOnOrder' ? 'active' : ''}`}
                   onClick={() => setActiveView("materialOnOrder")}
                 >
                   Material on Order
@@ -87,7 +124,7 @@ const InventoryHome = () => {
               </li>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
+                  className={`inventory-header__nav-btn ${activeView === 'orderHistory' ? 'active' : ''}`}
                   onClick={() => setActiveView("orderHistory")}
                 >
                   Order History
@@ -95,18 +132,38 @@ const InventoryHome = () => {
               </li>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
-                  onClick={() => setActiveView("createOrder")}
+                  className={`inventory-header__nav-btn ${activeView === 'addMaterial' ? 'active' : ''}`}
+                  onClick={() => setActiveView("addMaterial")}
+                  disabled={!canAccessButtons}
+                  style={!canAccessButtons ? { opacity: 0.5, cursor: "not-allowed" } : {}}
                 >
-                  Create Order
+                  Add New Material
                 </button>
               </li>
               <li>
                 <button
-                  className="inventory-header__nav-btn"
-                  onClick={() => setActiveView("addMaterial")}
+                  className={`inventory-header__nav-btn ${activeView === 'addStock' ? 'active' : ''}`}
+                  onClick={() => setActiveView("addStock")}
+                  disabled={!canAccessButtons}
+                  style={!canAccessButtons ? { opacity: 0.5, cursor: "not-allowed" } : {}}
                 >
-                  Add Material
+                  Add Stock
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'outfeedLogs' ? 'active' : ''}`}
+                  onClick={() => setActiveView("outfeedLogs")}
+                >
+                  Outfeed Logs
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'orphanPanels' ? 'active' : ''}`}
+                  onClick={() => setActiveView("orphanPanels")}
+                >
+                  Orphan Panels
                 </button>
               </li>
             </ul>

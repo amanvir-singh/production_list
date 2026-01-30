@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useMemo } from "react";
+import { useState, useEffect, useContext, useMemo, useRef } from "react";
 import axios from "axios";
 import "../../css/Inventory/InventoryList.scss";
 import { AuthContext } from "../../Components/AuthContext";
@@ -46,6 +46,7 @@ const InventoryList = ({ onEdit = () => {} }) => {
   const [chooseHeaderLabel, setChooseHeaderLabel] = useState("");
 
   const { user } = useContext(AuthContext);
+  const printRef = useRef();
 
   const canPerformActions = user.role === "Editor" || user.role === "admin";
 
@@ -117,11 +118,15 @@ const InventoryList = ({ onEdit = () => {} }) => {
           supplier: getField(row, ["supplier", "Supplier"]),
           code: getField(row, ["code", "Code"]),
           finish: (() => {
-             if (key) {
-                 const parts = key.split('_');
-                 if (parts.length > 2) return parts[2];
-             }
-             return getField(row, ["finish", "Finish"]);
+            const aggregationKey = normalize(
+              getField(row, ["aggregationKey", "AggregationKey"]) 
+            ).trim();
+
+            if (aggregationKey) {
+              const parts = aggregationKey.split("_");
+              if (parts.length > 2) return parts[2];
+            }
+            return getField(row, ["finish", "Finish"]);
           })(),
           thickness: getField(row, ["thickness", "Thickness"]),
           format: getField(row, ["format", "Format"]),
@@ -443,8 +448,26 @@ const InventoryList = ({ onEdit = () => {} }) => {
 
   const filterButtonLabel = hasActiveFilters ? "Clear Filters" : "Filter";
 
+  const highlightText = (text, highlight) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const regex = new RegExp(`(${highlight})`, "gi");
+    const parts = String(text).split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>
+    );
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="inventory-list">
+    <div className="inventory-list" ref={printRef}>
+      <div className="print-header">
+        {user && <p>Printed by: {user.username}</p>}
+      </div>
       <h1>Warehouse Inventory</h1>
 
       <div className="inventory-list-header">
@@ -456,7 +479,7 @@ const InventoryList = ({ onEdit = () => {} }) => {
           className="search-input"
         />
         <p>
-          Fetched At:{" "}
+          Updated At:{" "}
           {tlfAgg?.fetchedAt
             ? new Date(tlfAgg.fetchedAt).toLocaleString()
             : fetchedAtDB ?? "N/A"}{" "}
@@ -479,6 +502,10 @@ const InventoryList = ({ onEdit = () => {} }) => {
 
           <button className="sort-button" onClick={openSortModal}>
             Sort By: {currentSortLabel}
+          </button>
+
+          <button className="print-button" onClick={handlePrint}>
+            Print
           </button>
         </div>
       </div>
@@ -511,24 +538,24 @@ const InventoryList = ({ onEdit = () => {} }) => {
             const key = row?._id || `${row.boardCode}-${idx}`;
             return (
               <tr key={key}>
-                <td>{row.supplier}</td>
-                <td>{row.code}</td>
-                <td>{formatFinishForTable(row.finish)}</td>
-                <td>{row.thickness}</td>
-                <td>{row.format}</td>
-                <td>{row.boardCode}</td>
+                <td>{highlightText(row.supplier, searchTerm)}</td>
+                <td>{highlightText(row.code, searchTerm)}</td>
+                <td>{highlightText(formatFinishForTable(row.finish), searchTerm)}</td>
+                <td>{highlightText(row.thickness, searchTerm)}</td>
+                <td>{highlightText(row.format, searchTerm)}</td>
+                <td>{highlightText(row.boardCode, searchTerm)}</td>
 
-                <td>{row.warehouseQty}</td>
-                <td>{row.tlfQty}</td>
-                <td>{row.onHandQty}</td>
-                <td>{row.reservedQty}</td>
-                <td>{row.availableQty}</td>
-                <td>{row.onOrderQty}</td>
-                <td>{row.projectedQty}</td>
+                <td>{highlightText(row.warehouseQty, searchTerm)}</td>
+                <td>{highlightText(row.tlfQty, searchTerm)}</td>
+                <td>{highlightText(row.onHandQty, searchTerm)}</td>
+                <td>{highlightText(row.reservedQty, searchTerm)}</td>
+                <td>{highlightText(row.availableQty, searchTerm)}</td>
+                <td>{highlightText(row.onOrderQty, searchTerm)}</td>
+                <td>{highlightText(row.projectedQty, searchTerm)}</td>
 
                 <td>
                   {canPerformActions ? (
-                    <>
+                    <>  
                       <button
                         className="edit-button"
                         onClick={() => handleEditClick(row)}
@@ -562,7 +589,7 @@ const InventoryList = ({ onEdit = () => {} }) => {
 
       {/* TLF-only boards section */}
       {tlfOnlyBoards.length > 0 && (
-        <>
+        <div className="tlf-only-section">
           <h2 style={{ marginTop: "24px" }}>
             Boards in TLF but not in Warehouse
           </h2>
@@ -582,7 +609,7 @@ const InventoryList = ({ onEdit = () => {} }) => {
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
       {showChooseRecordModal && (
