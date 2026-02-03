@@ -159,11 +159,26 @@ const AddMaterialOrder = ({
                 `${import.meta.env.VITE_APP_ROUTE}/materialOrders/${initialData._id}`,
                 payload
             );
+
+            await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+                user: user.username,
+                action: `Edited Material Order: ${payload.boardCode}`,
+                previousData: initialData,
+                updatedData: payload,
+            });
+
+            
         } else {
             await axios.post(
                 `${import.meta.env.VITE_APP_ROUTE}/materialOrders/add`,
                 payload
             );
+            await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+                user: user.username,
+                action: `Added Material Order: ${payload.boardCode}`,
+                updatedData: payload,
+            });
+
         }
 
         if (typeof onSuccess === "function") onSuccess();

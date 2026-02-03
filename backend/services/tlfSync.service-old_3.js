@@ -491,14 +491,10 @@ async function syncOnce() {
     }
 
     // 5) Preload which boardCodes exist in warehouse
-    const allBoardCodes = new Set([
-      ...prevQtyMap.keys(),
-      ...newQtyMap.keys(),
-      ...eventsByBoardCode.keys(),
-    ]);
+    const boardCodesInEvents = Array.from(eventsByBoardCode.keys());
     const whDocs = await WarehouseInventory.find(
-      { boardCode: { $in: Array.from(allBoardCodes) } },
-      { boardCode: 1, warehouseQty: 1 }
+      { boardCode: { $in: boardCodesInEvents } },
+      { boardCode: 1, warehouseQty: 1 },
     ).lean();
     
     const warehouseDataMap = new Map();
@@ -510,74 +506,63 @@ async function syncOnce() {
     }
 
 
-
-    // 6) Reconcile snapshot deltas + attribute outfeed events
+    // 6) Infer movement + build logs/orphans + compute warehouse deltas
     const warehouseDeltasByBoardCode = new Map();
     const outfeedLogs = [];
 
-    for (const boardCode of allBoardCodes) {
+    for (const boardCode of boardCodesInEvents) {
+      const evs = eventsByBoardCode.get(boardCode) || [];
+      const S = evs.length;
+      if (S <= 0) continue;
+
       const oldTlfQty = prevQtyMap.get(boardCode) || 0;
       const newTlfQty = newQtyMap.get(boardCode) || 0;
       const deltaT = newTlfQty - oldTlfQty;
 
-      const evs = eventsByBoardCode.get(boardCode) || [];
-      const S = evs.length;
-
-      /**
-      * INVENTORY MATH
-      * deltaT = W2T - T2O
-      * S      = T2O + W2O
-      * => total warehouse consumption = W2T + W2O
-      * => warehouseDelta = -deltaT - S
-      */
-      const rawWarehouseDelta = -deltaT - S;
-
+      // Initial calculation of movements
+      const fromTLFToOutfeed = Math.min(S, Math.max(0, -deltaT));
+      const fromWarehouseDirectToOutfeed = S - fromTLFToOutfeed;
+      const warehouseToTLFStorage = Math.max(0, deltaT);
+      
+      const totalWarehouseDemand = fromWarehouseDirectToOutfeed + warehouseToTLFStorage;
+      let warehouseDelta = -totalWarehouseDemand;
 
       const whData = warehouseDataMap.get(boardCode);
       const existsInWarehouse = !!whData?.exists;
       const currentWhQty = whData?.warehouseQty || 0;
 
-      let appliedWarehouseDelta = 0;
+      // Deficit Calculation
       let deficit = 0;
-
       if (existsInWarehouse) {
-        if (currentWhQty + rawWarehouseDelta >= 0) {
-          appliedWarehouseDelta = rawWarehouseDelta;
-        } else {
-          appliedWarehouseDelta = -currentWhQty;
-          deficit = -(currentWhQty + rawWarehouseDelta);
-        }
-
-        warehouseDeltasByBoardCode.set(
-          boardCode,
-          (warehouseDeltasByBoardCode.get(boardCode) || 0) + appliedWarehouseDelta
-        );
+          if (currentWhQty < totalWarehouseDemand) {
+              deficit = totalWarehouseDemand - currentWhQty;
+              warehouseDelta = -currentWhQty;
+          }
+          
+          warehouseDeltasByBoardCode.set(
+            boardCode,
+            (warehouseDeltasByBoardCode.get(boardCode) || 0) + warehouseDelta,
+          );
       } else {
-        deficit = -rawWarehouseDelta;
+          deficit = totalWarehouseDemand;
       }
 
-      /**
-       * EVENT ATTRIBUTION
-       */
-      const tlfUsedForOutfeed = Math.max(0, oldTlfQty - newTlfQty);
-      const warehouseUsedForOutfeed = Math.max(0, S - tlfUsedForOutfeed);
+      const countTLF = fromTLFToOutfeed;
+      let countWarehouse = Math.max(0, fromWarehouseDirectToOutfeed - deficit);
+      let countUnknown = S - countTLF - countWarehouse;
 
-      let remainingTLF = tlfUsedForOutfeed;
-      let remainingWarehouse = warehouseUsedForOutfeed;
+      const existsInNewSnapshot = newQtyMap.has(boardCode);
+      const isOrphan = !existsInNewSnapshot && !existsInWarehouse;
 
+      // Assign sources to event
       for (let i = 0; i < evs.length; i++) {
         const ev = evs[i];
         let source = "UNKNOWN";
+        if (i < countTLF) source = "TLF_STORAGE";
+        else if (i < countTLF + countWarehouse) source = "WAREHOUSE";
+        else source = "UNKNOWN";
 
-        if (remainingTLF > 0) {
-          source = "TLF_STORAGE";
-          remainingTLF--;
-        } else if (remainingWarehouse > 0) {
-          source = "WAREHOUSE";
-          remainingWarehouse--;
-        }
-
-        if (source === "UNKNOWN") {
+        if (isOrphan || source === "UNKNOWN") {
           await upsertOrphanEvent({ boardCode, ev, now });
         }
 
@@ -596,7 +581,6 @@ async function syncOnce() {
         });
       }
     }
-
 
     // 7) WRITING UPDATED DATA
     // 7a) overwrite snapshot
@@ -653,7 +637,7 @@ async function syncOnce() {
       cursor: { lastProcessedId: maxAuslagerRowId },
     });
 
-    console.log("Inventory updated");
+    console.log("New data emitted updated");
 
     return {
       ok: true,
