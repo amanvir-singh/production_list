@@ -28,6 +28,13 @@ const OutfeedLogs = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const formatDateTimeLocal = (dateString) => {
+    if (!dateString) return "Unknown";
+    const dateStr = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
+    const date = new Date(dateStr);
+    return date.toLocaleString();
+  };
+
   const highlightText = (text, highlight) => {
     if (!highlight.trim()) {
       return text;
@@ -93,7 +100,7 @@ const OutfeedLogs = () => {
                   </td>
                   <td className="qty-cell">{log.quantity}</td>
                   <td>{formatDate(log.processedAt)}</td>
-                  <td>{formatDate(log.eventTime)}</td>
+                  <td>{formatDateTimeLocal(log.eventTime)}</td>
                 </tr>
               ))}
             </tbody>

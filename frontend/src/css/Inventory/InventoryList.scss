@@ -27,16 +27,68 @@
       display: none !important;
     }
 
-    table {
-        th:last-child,
-        td:last-child {
-            display: none !important; 
-        }
+    table tbody tr:nth-child(even) {
+      background-color: #f5f7fa !important;
+    }
 
-        th:nth-child(6),
-        td:nth-child(6) {
-            display: none !important; 
-        }
+    table tbody tr:nth-child(odd) {
+      background-color: #ffffff !important;
+    }
+
+    /* Available Qty */
+    td:nth-child(11) {
+      background-color: #e8f5e9 !important;
+      font-weight: 600;
+    }
+
+    /* On Order Qty */
+    td:nth-child(12) {
+      background-color: #e3f2fd !important;
+      font-weight: 600;
+    }
+
+    /* Projected Qty */
+    td:nth-child(13) {
+      background-color: #f3e5f5 !important;
+      font-weight: 700;
+    }
+
+    td:nth-child(11),
+    td:nth-child(12),
+    td:nth-child(13) {
+      text-align: center !important;
+      padding-right: 10px !important;
+    }
+
+    table th {
+      background: #263238 !important;
+      color: white !important;
+      font-size: 16px !important;
+      letter-spacing: 0.5px;
+    }
+
+    table td {
+      border: 1px solid #999 !important;
+    }
+
+    
+    table {
+
+        /* Hide unnecessary columns */
+      th:nth-child(6),
+      td:nth-child(6),  // board code
+      th:nth-child(7),
+      td:nth-child(7),  // warehouse
+      th:nth-child(8),
+      td:nth-child(8),  // tlf
+      th:nth-child(9),
+      td:nth-child(9),  // on-hand
+      th:nth-child(10),
+      td:nth-child(10), // reserved
+      th:last-child,
+      td:last-child {   // actions
+        display: none !important;
+      }
         
       
         th, td {

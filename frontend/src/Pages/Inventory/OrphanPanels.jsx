@@ -15,7 +15,12 @@ const highlightText = (text, highlight) => {
 
 const JobGroup = ({ jobName, events, searchTerm }) => {
   const [expanded, setExpanded] = useState(false);
-  const formattedDate = (d) => new Date(d).toLocaleString();
+  const formatDateTimeLocal = (dateString) => {
+    if (!dateString) return "Unknown";
+    const dateStr = dateString.replace('Z', '').replace(/[+-]\d{2}:\d{2}$/, '');
+    const date = new Date(dateStr);
+    return date.toLocaleString();
+  };
 
   return (
     <div className="job-group">
@@ -39,7 +44,7 @@ const JobGroup = ({ jobName, events, searchTerm }) => {
                         <tr key={idx}>
                             <td>{evt.dest}</td>
                             <td>{evt.plan}</td>
-                            <td>{formattedDate(evt.eventTime)}</td>
+                            <td>{formatDateTimeLocal(evt.eventTime)}</td>
                         </tr>
                     ))}
                 </tbody>
