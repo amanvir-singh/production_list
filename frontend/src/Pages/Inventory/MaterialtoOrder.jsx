@@ -15,7 +15,9 @@ const MaterialtoOrder = () => {
   const [selectedOrderToMark, setSelectedOrderToMark] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [suppliers, setSuppliers] = useState({});
   const printRef = useRef();
+
 
   // Delete modal state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -38,8 +40,24 @@ const MaterialtoOrder = () => {
     }
   };
 
+  const fetchSuppliers = async () => {
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_APP_ROUTE}/suppliers`);
+    
+    const supplierMap = {};
+    res.data.forEach(s => {
+      supplierMap[s.code] = s.name;
+    });
+
+    setSuppliers(supplierMap);
+  } catch (error) {
+    console.error("Error fetching suppliers:", error);
+  }
+};
+
   useEffect(() => {
     fetchOrders();
+    fetchSuppliers();
   }, []);
 
   const handleDeleteClick = (order) => {
@@ -94,6 +112,17 @@ const MaterialtoOrder = () => {
         (order.format || "").toLowerCase().includes(term)
     );
   });
+  const ordersBySupplier = filteredOrders.reduce((acc, order) => {
+  const supplier = order.supplier || "Unknown Supplier";
+
+  if (!acc[supplier]) {
+    acc[supplier] = [];
+  }
+
+  acc[supplier].push(order);
+
+  return acc;
+}, {});
 
   if (editingOrder) {
       return (
@@ -142,55 +171,69 @@ const MaterialtoOrder = () => {
                         Print
                 </button>
             </div>
-            <table>
-                <thead>
+            {Object.entries(ordersBySupplier).map(([supplier, supplierOrders]) => (
+              <div className="supplier-group" key={supplier}>
+                
+                <h2 className="supplier-title">
+                  {suppliers[supplier] || supplier}
+                </h2>
+
+                <table>
+                  <thead>
                     <tr>
-                        <th>Supplier</th>
-                        <th>Code</th>
-                        <th>Finish</th>
-                        <th>Thickness</th>
-                        <th>Format</th>
-                        <th>Qty to Order</th>
-                        <th>Date Added</th>
-                        {canManage && <th>Actions</th>}
+                      <th>Supplier</th>
+                      <th>Code</th>
+                      <th>Finish</th>
+                      <th>Thickness</th>
+                      <th>Format</th>
+                      <th>Qty to Order</th>
+                      <th>Date Added</th>
+                      {canManage && <th>Actions</th>}
                     </tr>
-                </thead>
-                <tbody>
-                    {filteredOrders.map(order => (
-                        <tr key={order._id}>
-                            <td>{highlightText(order.supplier, searchTerm)}</td>
-                            <td>{highlightText(order.code, searchTerm)}</td>
-                            <td>{highlightText(order.finish, searchTerm)}</td>
-                            <td>{highlightText(order.thickness, searchTerm)}</td>
-                            <td>{highlightText(order.format, searchTerm)}</td>
-                            <td>{order.orderedQty}</td>
-                            <td>{order.createdAt.split('T')[0]}</td>
-                            {canManage && (
-                                <td className="action-cell">
-                                    <button 
-                                        className="action-btn order"
-                                        onClick={() => setSelectedOrderToMark(order)}
-                                    >
-                                        Mark Ordered
-                                    </button>
-                                    <button 
-                                        className="action-btn edit"
-                                        onClick={() => setEditingOrder(order)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button 
-                                        className="action-btn delete"
-                                        onClick={() => handleDeleteClick(order)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            )}
-                        </tr>
+                  </thead>
+
+                  <tbody>
+                    {supplierOrders.map(order => (
+                      <tr key={order._id}>
+                        <td>{highlightText(order.supplier, searchTerm)}</td>
+                        <td>{highlightText(order.code, searchTerm)}</td>
+                        <td>{highlightText(order.finish, searchTerm)}</td>
+                        <td>{highlightText(order.thickness, searchTerm)}</td>
+                        <td>{highlightText(order.format, searchTerm)}</td>
+                        <td>{order.orderedQty}</td>
+                        <td>{order.createdAt.split('T')[0]}</td>
+
+                        {canManage && (
+                          <td className="action-cell">
+                            <button
+                              className="action-btn order"
+                              onClick={() => setSelectedOrderToMark(order)}
+                            >
+                              Mark Ordered
+                            </button>
+
+                            <button
+                              className="action-btn edit"
+                              onClick={() => setEditingOrder(order)}
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              className="action-btn delete"
+                              onClick={() => handleDeleteClick(order)}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        )}
+                      </tr>
                     ))}
-                </tbody>
-            </table>
+                  </tbody>
+                </table>
+
+              </div>
+            ))}
         </div>
       )}
 
