@@ -7,7 +7,9 @@ import MaterialtoOrder from "./MaterialtoOrder";
 import AddMaterialOrder from "./AddMaterialOrder";
 import AddStock from "./AddStock";
 import OutfeedLogs from "./OutfeedLogs";
+import InfeedLogs from "./InfeedLogs";
 import OrphanPanels from "./OrphanPanels";
+import AuditLogs from "./AuditLogs";
 import "../../css/Inventory/InventoryHome.scss";
 import { useState, useContext } from "react";
 import { AuthContext } from "../../Components/AuthContext";
@@ -62,8 +64,12 @@ const InventoryHome = () => {
         );
       case "outfeedLogs":
         return <OutfeedLogs />;
+      case "infeedLogs":
+        return <InfeedLogs />;
       case "orphanPanels":
         return <OrphanPanels />;
+      case "auditLogs":
+        return <AuditLogs />;
       default:
         return <InventoryList onEdit={handleEditInventory} />;
     }
@@ -160,10 +166,26 @@ const InventoryHome = () => {
               </li>
               <li>
                 <button
+                  className={`inventory-header__nav-btn ${activeView === 'infeedLogs' ? 'active' : ''}`}
+                  onClick={() => setActiveView("infeedLogs")}
+                >
+                  Infeed Logs
+                </button>
+              </li>
+              <li>
+                <button
                   className={`inventory-header__nav-btn ${activeView === 'orphanPanels' ? 'active' : ''}`}
                   onClick={() => setActiveView("orphanPanels")}
                 >
                   Orphan Panels
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'auditLogs' ? 'active' : ''}`}
+                  onClick={() => setActiveView("auditLogs")}
+                >
+                  Audit Logs
                 </button>
               </li>
             </ul>

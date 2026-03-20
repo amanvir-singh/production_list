@@ -19,6 +19,11 @@ const TLFOrphanPanelSchema = require("./models/TLFOrphanPanel");
 const TLFOutfeedLogSchema = require("./models/TLFOutfeedLog");
 const TLFOutfeedCursorSchema = require("./models/TLFOutfeedCursor");
 const materialOrderSchema = require("./models/materialOrder");
+const edgeBandInventorySchema = require("./models/edgeBandInventory");
+const TLFPendingOutfeedSchema = require("./models/TLFPendingOutfeed");
+const TLFSyncAuditSchema = require("./models/TLFSyncAudit");
+const TLFInfeedLogSchema = require("./models/TLFInfeedLog");
+const TLFInfeedCursorSchema = require("./models/TLFInfeedCursor");
 
 function initializeModels() {
   console.log("Checking for Models...");
@@ -69,6 +74,26 @@ function initializeModels() {
       name: "materialOrders",
       schema: materialOrderSchema,
     },
+    edgeBandInventory: {
+      name: "edgeBandInventory",
+      schema: edgeBandInventorySchema,
+    },
+    TLFPendingOutfeed: {
+      name: "TLFPendingOutfeed",
+      schema: TLFPendingOutfeedSchema,
+    },
+    TLFSyncAudit: {
+      name: "TLFSyncAudit",
+      schema: TLFSyncAuditSchema,
+    },
+    TLFInfeedLog: {
+      name: "TLFInfeedLog",
+      schema: TLFInfeedLogSchema,
+    },
+    TLFInfeedCursor: {
+      name: "TLFInfeedCursor",
+      schema: TLFInfeedCursorSchema,
+    },
   };
 
   Object.entries(models).forEach(([key, { name, schema }]) => {
@@ -101,6 +126,11 @@ function initializeModels() {
     TLFOutfeedLog: models.TLFOutfeedLog.model,
     TLFOutfeedCursor: models.TLFOutfeedCursor.model,
     MaterialOrder: models.materialOrders.model,
+    EdgeBandInventory: models.edgeBandInventory.model,
+    TLFPendingOutfeed: models.TLFPendingOutfeed.model,
+    TLFSyncAudit: models.TLFSyncAudit.model,
+    TLFInfeedLog: models.TLFInfeedLog.model,
+    TLFInfeedCursor: models.TLFInfeedCursor.model,
   };
 }
 
@@ -126,5 +156,10 @@ module.exports = {
     TLFOutfeedLogSchema,
     TLFOutfeedCursorSchema,
     materialOrderSchema,
+    edgeBandInventorySchema,
+    TLFPendingOutfeedSchema,
+    TLFSyncAuditSchema,
+    TLFInfeedLogSchema,
+    TLFInfeedCursorSchema,
   },
 };

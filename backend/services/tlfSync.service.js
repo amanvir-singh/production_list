@@ -36,6 +36,30 @@ const MaterialOrder = mongoose.model(
   "materialOrders",
 );
 
+const TLFPendingOutfeed = mongoose.model(
+  "TLFPendingOutfeed",
+  schemas.TLFPendingOutfeedSchema,
+  "TLFPendingOutfeed",
+);
+
+const TLFSyncAudit = mongoose.model(
+  "TLFSyncAudit",
+  schemas.TLFSyncAuditSchema,
+  "TLFSyncAudit",
+);
+
+const TLFInfeedLog = mongoose.model(
+  "TLFInfeedLog",
+  schemas.TLFInfeedLogSchema,
+  "TLFInfeedLog",
+);
+
+const TLFInfeedCursor = mongoose.model(
+  "TLFInfeedCursor",
+  schemas.TLFInfeedCursorSchema,
+  "TLFInfeedCursor",
+);
+
 // Helper to recalc totals
 async function recalculateWarehouseTotals() {
   const allWhDocs = await WarehouseInventory.find({}).lean();
@@ -219,6 +243,53 @@ async function getOrCreateCursor() {
     cursor = await TLFOutfeedCursor.findById("auslagerCursor").lean();
   }
   return cursor;
+}
+
+async function getOrCreateInfeedCursor() {
+  let cursor = await TLFInfeedCursor.findById("bewegungCursor").lean();
+  if (!cursor) {
+    await TLFInfeedCursor.create({
+      _id: "bewegungCursor",
+      lastProcessedId: 0,
+      lastProcessedAt: null,
+    });
+    cursor = await TLFInfeedCursor.findById("bewegungCursor").lean();
+  }
+  return cursor;
+}
+
+// dbo.Bewegungen fetch + normalize
+// Columns: Id, Identnummer, Quellplatz, Zielplatz, Bewegungsdatum, Einlagervorgang, Auslagervorgang
+// Infeeds (warehouse → TLF storage) are identified by Einlagervorgang = 1
+async function fetchInfeedEventsAfterId(lastProcessedId) {
+  // Einlagervorgang = 1 AND Auslagervorgang = 0: panel was stored in TLF (true infeed).
+  // If both = 1, TLF was a pass-through (warehouse → saw/CNC directly) — not an infeed.
+  const query = `SELECT * FROM dbo.Bewegungen WHERE Id > ${Number(lastProcessedId) || 0} AND Einlagervorgang = 1 AND Auslagervorgang = 0`;
+  const rows = await FetchDatafromTLFWithQuery(query);
+  const normalized = [];
+
+  for (const r of rows || []) {
+    const bewegungRowId = toNum(r.Id);
+    if (!bewegungRowId) continue;
+
+    const boardCode = r.Identnummer;
+    if (!boardCode) continue;
+
+    const eventTimeRaw = r.Bewegungsdatum;
+    const eventTime = eventTimeRaw ? new Date(eventTimeRaw) : null;
+
+    normalized.push({
+      bewegungRowId,
+      boardCode: String(boardCode),
+      fromPosition: toNum(r.Quellplatz),
+      toPosition: toNum(r.Zielplatz),
+      quantity: 1,
+      eventTime,
+    });
+  }
+
+  normalized.sort((a, b) => a.bewegungRowId - b.bewegungRowId);
+  return normalized;
 }
 
 // AuslagerReport fetch + normalize
@@ -434,12 +505,34 @@ async function syncOnce() {
       .lean();
 
     // 1) Fetch everything
-    const cursor = await getOrCreateCursor();
+    const [cursor, infeedCursor] = await Promise.all([
+      getOrCreateCursor(),
+      getOrCreateInfeedCursor(),
+    ]);
 
-    const [boardsqldata, qtysqldata, outfeedEvents] = await Promise.all([
+    const syncId = `sync_${now.toISOString()}`;
+
+    const audit = {
+      syncId,
+      startedAt: now,
+      cursor: {
+        previous: cursor?.lastProcessedId || 0,
+        next: null,
+      },
+      summary: {
+        boardsTouched: 0,
+        totalWarehouseDelta: 0,
+        totalEvents: 0,
+        totalOrphans: 0,
+      },
+      boards: [],
+    };
+
+    const [boardsqldata, qtysqldata, outfeedEvents, infeedEvents] = await Promise.all([
       FetchDatafromTLF("dbo.Ident"),
       FetchDatafromTLF("dbo.lagen"),
       fetchOutfeedEventsAfterId(cursor?.lastProcessedId || 0),
+      fetchInfeedEventsAfterId(infeedCursor?.lastProcessedId || 0),
     ]);
 
     // 2) Prepare new snapshot
@@ -509,6 +602,14 @@ async function syncOnce() {
         });
     }
 
+    const pendingDocs = await TLFPendingOutfeed.find({}).lean();
+    const pendingMap = new Map();
+
+    for (const d of pendingDocs) {
+      pendingMap.set(d.boardCode, toNum(d.qty, 0));
+    }
+
+
 
 
     // 6) Reconcile snapshot deltas + attribute outfeed events
@@ -519,18 +620,40 @@ async function syncOnce() {
       const oldTlfQty = prevQtyMap.get(boardCode) || 0;
       const newTlfQty = newQtyMap.get(boardCode) || 0;
       const deltaT = newTlfQty - oldTlfQty;
+      const pendingBefore = pendingMap.get(boardCode) || 0;
 
       const evs = eventsByBoardCode.get(boardCode) || [];
       const S = evs.length;
 
+      const snapshotLoss = Math.max(0, oldTlfQty - newTlfQty);
+      const tlfFromPending = Math.min(pendingBefore, S);
+      const eventsRemaining = S - tlfFromPending;
+
+      const tlfFromSnapshot = Math.min(
+        snapshotLoss,
+        eventsRemaining
+      );
+
+      const warehouseUsedForOutfeed =
+        Math.max(0, eventsRemaining - tlfFromSnapshot);
+
+      const unexplainedTlfDrop = snapshotLoss - tlfFromSnapshot;
+      const pendingCreated = unexplainedTlfDrop;
+      const pendingAfter = pendingBefore - tlfFromPending + pendingCreated;
+
       /**
-      * INVENTORY MATH
-      * deltaT = W2T - T2O
-      * S      = T2O + W2O
-      * => total warehouse consumption = W2T + W2O
-      * => warehouseDelta = -deltaT - S
-      */
-      const rawWarehouseDelta = -deltaT - S;
+       * INVENTORY MATH
+       * deltaT = W2T - T2O        (W2T = warehouse→TLF replenishment, T2O = TLF→outfeed)
+       * S      = T2O + W2O        (W2O = warehouse→outfeed direct)
+       * => warehouseDelta = -(W2T + W2O)
+       *
+       * W2T = max(0, deltaT)   — only when TLF net increased (warehouse replenished TLF).
+       *                           When deltaT < 0, panels are leaving TLF — W2T = 0.
+       *                           Unexplained drops (no events) = panel in transit; tracked
+       *                           as pendingCreated debt. Must NOT raise warehouse qty.
+       * W2O = warehouseUsedForOutfeed
+       */
+      const rawWarehouseDelta = -Math.max(0, deltaT) - warehouseUsedForOutfeed;
 
 
       const whData = warehouseDataMap.get(boardCode);
@@ -556,14 +679,56 @@ async function syncOnce() {
         deficit = -rawWarehouseDelta;
       }
 
+      const boardAudit = {
+        boardCode,
+
+        snapshot: {
+          oldTlfQty,
+          newTlfQty,
+          deltaT,
+        },
+
+        warehouse: {
+          existed: existsInWarehouse,
+          warehouseOld: currentWhQty,
+          warehouseDeltaRaw: rawWarehouseDelta,
+          warehouseDeltaApplied: appliedWarehouseDelta,
+          warehouseNew: existsInWarehouse
+            ? currentWhQty + appliedWarehouseDelta
+            : null,
+          deficit,
+        },
+
+        events: {
+          total: evs.length,
+          fromTLF: 0,
+          fromWarehouse: 0,
+          unknown: 0,
+          details: [],
+        },
+
+        orphans: {
+          count: 0,
+          details: [],
+        },
+      };
+
+
       /**
        * EVENT ATTRIBUTION
        */
-      const tlfUsedForOutfeed = Math.max(0, oldTlfQty - newTlfQty);
-      const warehouseUsedForOutfeed = Math.max(0, S - tlfUsedForOutfeed);
 
-      let remainingTLF = tlfUsedForOutfeed;
-      let remainingWarehouse = warehouseUsedForOutfeed;
+      boardAudit.snapshot.oldTlfDebt = pendingBefore;
+      boardAudit.snapshot.newTlfDebt = pendingAfter;
+      pendingMap.set(boardCode, pendingAfter);
+
+      // Only as many events can be attributed to WAREHOUSE as the warehouse actually has
+      const effectiveWarehouseForAttribution = existsInWarehouse
+        ? Math.min(warehouseUsedForOutfeed, Math.max(0, currentWhQty))
+        : 0;
+
+      let remainingTLF = tlfFromPending + tlfFromSnapshot;
+      let remainingWarehouse = effectiveWarehouseForAttribution;
 
       for (let i = 0; i < evs.length; i++) {
         const ev = evs[i];
@@ -577,8 +742,34 @@ async function syncOnce() {
           remainingWarehouse--;
         }
 
+        if (source === "TLF_STORAGE") boardAudit.events.fromTLF++;
+        else if (source === "WAREHOUSE") boardAudit.events.fromWarehouse++;
+        else boardAudit.events.unknown++;
+
+        boardAudit.events.details.push({
+          auslagerRowId: ev.auslagerRowId,
+          auslagerId: ev.auslagerId,
+          dest: ev.dest,
+          source,
+          eventTime: ev.eventTime,
+          jobName: ev.jobName,
+          plan: ev.plan,
+        });
+
+
         if (source === "UNKNOWN") {
           await upsertOrphanEvent({ boardCode, ev, now });
+          boardAudit.orphans.count++;
+          boardAudit.orphans.details.push({
+            auslagerRowId: ev.auslagerRowId,
+            auslagerId: ev.auslagerId,
+            dest: ev.dest,
+            source: source,
+            eventTime: ev.eventTime,
+            jobName: ev.jobName,
+            plan: ev.plan,
+          });
+          audit.summary.totalOrphans++;
         }
 
         outfeedLogs.push({
@@ -595,6 +786,17 @@ async function syncOnce() {
           eventTime: ev.eventTime,
         });
       }
+
+      if (
+        deltaT !== 0 ||
+        rawWarehouseDelta !== 0 ||
+        evs.length > 0
+      ) {
+        audit.boards.push(boardAudit);
+      }
+      audit.summary.boardsTouched++;
+      audit.summary.totalWarehouseDelta += appliedWarehouseDelta;
+      audit.summary.totalEvents += evs.length;
     }
 
 
@@ -617,10 +819,39 @@ async function syncOnce() {
     // 7d) write outfeed logs
     await insertOutfeedLogs(outfeedLogs);
 
+    // 7e) update pending outfeed
+    const pendingOps = [];
+    const nowTs = new Date();
+
+    for (const [boardCode, qty] of pendingMap.entries()) {
+      if (qty > 0) {
+        pendingOps.push({
+          updateOne: {
+            filter: { boardCode },
+            update: {
+              $set: { qty, updatedAt: nowTs }
+            },
+            upsert: true,
+          },
+        });
+      } else {
+        pendingOps.push({
+          deleteOne: {
+            filter: { boardCode }
+          }
+        });
+      }
+    }
+
+    if (pendingOps.length > 0) {
+      await TLFPendingOutfeed.bulkWrite(pendingOps, { ordered: false });
+    }
+
+
     // 7f) Recalculate Warehouse Totals
     await recalculateWarehouseTotals();
 
-    // 7e) advance cursor
+    // 7g) advance cursor
     if (
       outfeedEvents.length > 0 &&
       maxAuslagerRowId > (cursor?.lastProcessedId || 0)
@@ -637,6 +868,57 @@ async function syncOnce() {
         { upsert: true },
       );
     }
+
+    // 7h) process infeed events (dbo.Bewegungen)
+    let maxBewegungId = infeedCursor?.lastProcessedId || 0;
+
+    if (infeedEvents.length > 0) {
+      const allBewegungIds = infeedEvents.map((e) => e.bewegungRowId);
+      const existingInfeedLogs = await TLFInfeedLog.find(
+        { bewegungRowId: { $in: allBewegungIds } },
+        { bewegungRowId: 1 }
+      ).lean();
+      const existingInfeedIds = new Set(existingInfeedLogs.map((l) => l.bewegungRowId));
+
+      const newInfeedDocs = [];
+      for (const ev of infeedEvents) {
+        if (existingInfeedIds.has(ev.bewegungRowId)) continue;
+        newInfeedDocs.push({
+          bewegungRowId: ev.bewegungRowId,
+          boardCode: ev.boardCode,
+          fromPosition: ev.fromPosition,
+          toPosition: ev.toPosition,
+          quantity: ev.quantity,
+          eventTime: ev.eventTime,
+          processedAt: now,
+        });
+        if (ev.bewegungRowId > maxBewegungId) maxBewegungId = ev.bewegungRowId;
+      }
+
+      if (newInfeedDocs.length > 0) {
+        await TLFInfeedLog.insertMany(newInfeedDocs, { ordered: false });
+      }
+    }
+
+    if (maxBewegungId > (infeedCursor?.lastProcessedId || 0)) {
+      await TLFInfeedCursor.updateOne(
+        { _id: "bewegungCursor" },
+        { $set: { lastProcessedId: maxBewegungId, lastProcessedAt: now } },
+        { upsert: true }
+      );
+    } else {
+      await TLFInfeedCursor.updateOne(
+        { _id: "bewegungCursor" },
+        { $set: { lastProcessedAt: now } },
+        { upsert: true }
+      );
+    }
+
+    // 7i) save audit
+    audit.cursor.next = maxAuslagerRowId;
+    audit.finishedAt = new Date();
+
+    await TLFSyncAudit.create(audit);
 
     // 8) Broadcast
     const latest = await TLFInventory.findOne({})
