@@ -18,7 +18,13 @@ const ReceiveOrderModal = ({ order, isOpen, onClose, onSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      // 1. Update Material Order
+      // 1. Update Warehouse Inventory Stock first — if this fails, order stays unchanged
+      await axios.put(
+        `${import.meta.env.VITE_APP_ROUTE}/warehouseInventory/add-stock/${order.boardCode}`,
+        { qtyToAdd: Number(receivedQty) }
+      );
+
+      // 2. Update Material Order status only after stock was successfully added
       const updateOrderPayload = {
         status: "Received",
         receivedQty: Number(receivedQty),
@@ -28,16 +34,6 @@ const ReceiveOrderModal = ({ order, isOpen, onClose, onSuccess }) => {
       await axios.put(
         `${import.meta.env.VITE_APP_ROUTE}/materialOrders/${order._id}`,
         updateOrderPayload
-      );
-
-      // 2. Update Warehouse Inventory Stock
-      const addStockPayload = {
-        qtyToAdd: Number(receivedQty)
-      };
-      
-      await axios.put(
-        `${import.meta.env.VITE_APP_ROUTE}/warehouseInventory/add-stock/${order.boardCode}`,
-        addStockPayload
       );
 
       // 3. Log the Action

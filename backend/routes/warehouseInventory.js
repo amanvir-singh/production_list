@@ -74,11 +74,23 @@ router.put("/add-stock/:boardCode", async (req, res) => {
         return res.status(400).json({ message: "Invalid quantity provided" });
     }
 
-    const inventory = await WarehouseInventory.findOneAndUpdate(
+    let inventory = await WarehouseInventory.findOneAndUpdate(
       { boardCode: req.params.boardCode },
       { $inc: { warehouseQty: Number(qtyToAdd) } },
       { new: true }
     );
+
+    // Fallback: boardCode may be an aggregationKey — find the first record that uses it
+    if (!inventory) {
+      const byAggKey = await WarehouseInventory.findOne({ aggregationKey: req.params.boardCode });
+      if (byAggKey) {
+        inventory = await WarehouseInventory.findOneAndUpdate(
+          { _id: byAggKey._id },
+          { $inc: { warehouseQty: Number(qtyToAdd) } },
+          { new: true }
+        );
+      }
+    }
 
     if (!inventory) {
       return res.status(404).json({ message: "Inventory record not found" });
