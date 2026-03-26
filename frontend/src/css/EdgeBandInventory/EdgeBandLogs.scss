@@ -1,0 +1,105 @@
+.eb-logs {
+  &__header {
+    margin-bottom: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  &__count {
+    font-weight: 500;
+  }
+
+  &__status {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+
+    &--error {
+      color: #e53935;
+    }
+  }
+
+  &__table-wrap {
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+
+    th {
+      background-color: #f0f0f0;
+      text-align: left;
+      padding: 0.65rem 0.9rem;
+      border-bottom: 2px solid #ddd;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.55rem 0.9rem;
+      border-bottom: 1px solid #ebebeb;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background-color: #f5f9ff;
+    }
+  }
+
+  &__date {
+    white-space: nowrap;
+    color: #666;
+    font-size: 0.82rem;
+  }
+
+  &__pre {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #444;
+    background: #f8f8f8;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    max-width: 300px;
+    max-height: 120px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  &__empty {
+    text-align: center;
+    color: #999;
+    padding: 2rem !important;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  &__page-btn {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.15s;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #e3f2fd;
+      border-color: #2196f3;
+    }
+  }
+}

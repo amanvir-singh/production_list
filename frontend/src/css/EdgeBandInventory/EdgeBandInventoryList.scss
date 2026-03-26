@@ -1,0 +1,490 @@
+.eb-list {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0;
+
+  // ── Print styles ──────────────────────────────────────────────────────────
+  @media print {
+    max-width: 100%;
+    margin: 0;
+    zoom: 0.75;
+    padding: 0;
+
+    .eb-list__print-header {
+      display: block !important;
+      margin-bottom: 12px;
+
+      h2 {
+        font-size: 22px;
+        margin: 0 0 4px;
+        color: #263238;
+      }
+
+      p {
+        font-size: 11px;
+        color: #555;
+        margin: 1px 0;
+        font-style: italic;
+      }
+    }
+
+    .eb-list__controls,
+    .eb-list__status,
+    .eb-list__no-print,
+    .eb-modal-overlay {
+      display: none !important;
+    }
+
+    .eb-list__table-wrap {
+      overflow: visible;
+      padding-bottom: 0;
+    }
+
+    .eb-list__table {
+      width: auto;
+      min-width: 500px;
+      border-collapse: collapse;
+
+      thead tr {
+        background: #263238 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      th {
+        background: #263238 !important;
+        color: #fff !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        padding: 5px 8px !important;
+        letter-spacing: 0.3px;
+        border: 0.5px solid #000 !important;
+        text-align: center !important;
+      }
+
+      td {
+        font-size: 14px !important;
+        padding: 4px 8px !important;
+        border: 0.5px solid #555 !important;
+        text-align: center !important;
+      }
+
+      tbody tr:nth-child(even) td {
+        background-color: #f5f7fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      tbody tr:nth-child(odd) td {
+        background-color: #ffffff !important;
+      }
+
+      td:nth-child(4) {
+        background-color: #e8f5e9 !important;
+        font-weight: 600;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    // Keep screen-style location display (2 tags + "+N more" badge) unchanged in print
+    .eb-list__loc-tooltip {
+      display: none !important;
+    }
+  }
+
+  // ── Print header (hidden on screen) ──────────────────────────────────────
+  &__print-header {
+    display: none;
+  }
+
+  // ── Controls bar ─────────────────────────────────────────────────────────
+  &__controls {
+    display: flex;
+    align-items: stretch;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    width: 200px;
+    flex-shrink: 0;
+    min-height: 38px;
+    box-sizing: border-box;
+    padding: 0 0.65rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #2196f3;
+    }
+  }
+
+  &__filters {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  &__select {
+    flex: 1 1 0;
+    min-width: 130px;
+    max-width: 200px;
+    font-size: 0.875rem;
+  }
+
+  &__print-btn {
+    flex-shrink: 0;
+    align-self: stretch;
+    background-color: #795548;
+    color: #fff;
+    border: none;
+    padding: 0 1.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: #5d4037;
+    }
+  }
+
+  // ── Status messages ───────────────────────────────────────────────────────
+  &__status {
+    padding: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+
+    &--error {
+      color: #e53935;
+    }
+  }
+
+  // ── Table ─────────────────────────────────────────────────────────────────
+  &__table-wrap {
+    overflow-x: auto;
+    padding-bottom: 120px;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+
+    th {
+      background-color: #37474f;
+      color: #fff;
+      text-align: center;
+      padding: 0.3rem 0.55rem;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      border: 1px solid #455a64;
+    }
+
+    td {
+      padding: 0.28rem 0.55rem;
+      border: 1px solid #dde2e6;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    tbody tr {
+      &:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      &:hover {
+        background-color: #e3f2fd;
+      }
+    }
+
+    mark {
+      background-color: yellow;
+      padding: 0;
+    }
+  }
+
+  &__qty {
+    font-weight: 600;
+    color: #2e7d32;
+  }
+
+  &__empty {
+    text-align: center;
+    color: #aaa;
+    padding: 2rem !important;
+    font-style: italic;
+  }
+
+  // ── Location cell ─────────────────────────────────────────────────────────
+  &__loc-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__loc-preview {
+    display: inline-flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__loc-tag {
+    display: inline-block;
+    background: #f0f4f8;
+    border: 1px solid #cfd8dc;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    font-family: monospace;
+  }
+
+  &__loc-empty {
+    color: #bbb;
+  }
+
+  &__loc-more {
+    position: relative;
+    display: inline-block;
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    color: #1565c0;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover .eb-list__loc-tooltip {
+      display: flex;
+    }
+  }
+
+  &__loc-tooltip {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    min-width: 130px;
+  }
+
+  &__loc-tooltip-row {
+    font-size: 0.82rem;
+    font-family: monospace;
+    white-space: nowrap;
+    color: #333;
+
+    strong {
+      color: #1565c0;
+    }
+  }
+
+  // ── Action buttons (2×2 grid) ─────────────────────────────────────────────
+  &__actions {
+    padding: 0.3rem 0.4rem !important;
+  }
+
+  &__actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    width: 126px;
+    margin: 0 auto;
+  }
+
+  &__btn {
+    padding: 0.26rem 0.3rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.74rem;
+    font-weight: 500;
+    text-align: center;
+    transition: filter 0.15s;
+    white-space: nowrap;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &--add {
+      background-color: #4caf50;
+      color: #fff;
+      &:hover:not(:disabled) {
+        filter: brightness(0.88);
+      }
+    }
+    &--deduct {
+      background-color: #ff9800;
+      color: #fff;
+      &:hover:not(:disabled) {
+        filter: brightness(0.88);
+      }
+    }
+    &--edit {
+      background-color: #2196f3;
+      color: #fff;
+      &:hover:not(:disabled) {
+        filter: brightness(0.88);
+      }
+    }
+    &--delete {
+      background-color: #e53935;
+      color: #fff;
+      &:hover:not(:disabled) {
+        filter: brightness(0.88);
+      }
+    }
+  }
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+.eb-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.eb-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.75rem 2rem;
+  min-width: 340px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+
+  h3 {
+    margin: 0 0 1.25rem;
+    font-size: 1.05rem;
+    color: #333;
+  }
+  p {
+    margin: 0 0 1.25rem;
+    color: #555;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input,
+    select {
+      padding: 0.42rem 0.65rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+      &:focus {
+        border-color: #2196f3;
+      }
+    }
+  }
+
+  &__error {
+    color: #e53935;
+    font-size: 0.82rem;
+    margin: 0 0 0.75rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.65rem;
+    margin-top: 0.5rem;
+  }
+
+  &__btn {
+    padding: 0.48rem 1.1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 500;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    &--confirm {
+      background-color: #2196f3;
+      color: #fff;
+      &:hover:not(:disabled) {
+        background-color: #1565c0;
+      }
+    }
+    &--cancel {
+      background-color: #f0f0f0;
+      color: #333;
+      &:hover {
+        background-color: #e0e0e0;
+      }
+    }
+    &--delete {
+      background-color: #e53935;
+      color: #fff;
+      &:hover:not(:disabled) {
+        background-color: #b71c1c;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .eb-list {
+    &__controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    &__search {
+      width: 100%;
+    }
+    &__filters {
+      flex-direction: column;
+    }
+    &__select {
+      max-width: 100%;
+    }
+    &__print-btn {
+      padding: 0.55rem 1rem;
+    }
+    &__actions-grid {
+      width: 110px;
+    }
+  }
+}
