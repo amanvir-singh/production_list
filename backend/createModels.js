@@ -20,6 +20,9 @@ const TLFOutfeedLogSchema = require("./models/TLFOutfeedLog");
 const TLFOutfeedCursorSchema = require("./models/TLFOutfeedCursor");
 const materialOrderSchema = require("./models/materialOrder");
 const edgeBandInventorySchema = require("./models/edgeBandInventory");
+const edgeBandHeightSchema = require("./models/edgeBandHeight");
+const edgeBandThicknessSchema = require("./models/edgeBandThickness");
+const edgeBandLogSchema = require("./models/edgeBandLog");
 const TLFPendingOutfeedSchema = require("./models/TLFPendingOutfeed");
 const TLFSyncAuditSchema = require("./models/TLFSyncAudit");
 const TLFInfeedLogSchema = require("./models/TLFInfeedLog");
@@ -79,6 +82,18 @@ function initializeModels() {
       name: "edgeBandInventory",
       schema: edgeBandInventorySchema,
     },
+    edgeBandHeight: {
+      name: "edgeBandHeight",
+      schema: edgeBandHeightSchema,
+    },
+    edgeBandThickness: {
+      name: "edgeBandThickness",
+      schema: edgeBandThicknessSchema,
+    },
+    edgeBandLog: {
+      name: "edgeBandLog",
+      schema: edgeBandLogSchema,
+    },
     TLFPendingOutfeed: {
       name: "TLFPendingOutfeed",
       schema: TLFPendingOutfeedSchema,
@@ -132,6 +147,9 @@ function initializeModels() {
     TLFOutfeedCursor: models.TLFOutfeedCursor.model,
     MaterialOrder: models.materialOrders.model,
     EdgeBandInventory: models.edgeBandInventory.model,
+    EdgeBandHeight: models.edgeBandHeight.model,
+    EdgeBandThickness: models.edgeBandThickness.model,
+    EdgeBandLog: models.edgeBandLog.model,
     TLFPendingOutfeed: models.TLFPendingOutfeed.model,
     TLFSyncAudit: models.TLFSyncAudit.model,
     TLFInfeedLog: models.TLFInfeedLog.model,
@@ -163,6 +181,9 @@ module.exports = {
     TLFOutfeedCursorSchema,
     materialOrderSchema,
     edgeBandInventorySchema,
+    edgeBandHeightSchema,
+    edgeBandThicknessSchema,
+    edgeBandLogSchema,
     TLFPendingOutfeedSchema,
     TLFSyncAuditSchema,
     TLFInfeedLogSchema,
