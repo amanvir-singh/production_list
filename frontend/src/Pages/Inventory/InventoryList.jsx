@@ -40,6 +40,8 @@ const InventoryList = ({ onEdit = () => {} }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
 
+  const [selectedRowId, setSelectedRowId] = useState(null);
+
   const [showChooseRecordModal, setShowChooseRecordModal] = useState(false);
   const [chooseActionType, setChooseActionType] = useState(null);
   const [chooseCandidates, setChooseCandidates] = useState([]);
@@ -537,7 +539,11 @@ const InventoryList = ({ onEdit = () => {} }) => {
           {filteredInventory.map((row, idx) => {
             const key = row?._id || `${row.boardCode}-${idx}`;
             return (
-              <tr key={key}>
+              <tr
+                key={key}
+                className={selectedRowId === key ? "row-selected" : ""}
+                onClick={() => setSelectedRowId(selectedRowId === key ? null : key)}
+              >
                 <td>{highlightText(row.supplier, searchTerm)}</td>
                 <td>{highlightText(row.code, searchTerm)}</td>
                 <td>{highlightText(formatFinishForTable(row.finish), searchTerm)}</td>

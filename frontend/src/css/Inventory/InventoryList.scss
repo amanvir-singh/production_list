@@ -206,6 +206,20 @@
       background-color: #f9f9f9;
     }
 
+    tbody tr {
+      cursor: pointer;
+
+      &:hover {
+        background-color: #e3f2fd;
+      }
+
+      &.row-selected,
+      &.row-selected:nth-child(even),
+      &.row-selected:nth-child(odd) {
+        background-color: skyblue;
+      }
+    }
+
     .edit-button,
     .delete-button {
       display: inline-block;
