@@ -8,6 +8,8 @@ import AddMaterialOrder from "./AddMaterialOrder";
 import AddStock from "./AddStock";
 import OutfeedLogs from "./OutfeedLogs";
 import InfeedLogs from "./InfeedLogs";
+import InflatedInventory from "./InflatedInventory";
+import ManualRemovals from "./ManualRemovals";
 import OrphanPanels from "./OrphanPanels";
 import AuditLogs from "./AuditLogs";
 import "../../css/Inventory/InventoryHome.scss";
@@ -66,6 +68,10 @@ const InventoryHome = () => {
         return <OutfeedLogs />;
       case "infeedLogs":
         return <InfeedLogs />;
+      case "inflatedInventory":
+        return <InflatedInventory />;
+      case "manualRemovals":
+        return <ManualRemovals />;
       case "orphanPanels":
         return <OrphanPanels />;
       case "auditLogs":
@@ -186,6 +192,22 @@ const InventoryHome = () => {
                   onClick={() => setActiveView("auditLogs")}
                 >
                   Audit Logs
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'inflatedInventory' ? 'active' : ''}`}
+                  onClick={() => setActiveView("inflatedInventory")}
+                >
+                  Phantom Inflation
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`inventory-header__nav-btn ${activeView === 'manualRemovals' ? 'active' : ''}`}
+                  onClick={() => setActiveView("manualRemovals")}
+                >
+                  Manual Removals
                 </button>
               </li>
             </ul>
