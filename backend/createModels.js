@@ -24,6 +24,7 @@ const TLFPendingOutfeedSchema = require("./models/TLFPendingOutfeed");
 const TLFSyncAuditSchema = require("./models/TLFSyncAudit");
 const TLFInfeedLogSchema = require("./models/TLFInfeedLog");
 const TLFInfeedCursorSchema = require("./models/TLFInfeedCursor");
+const TLFManualRemovalSchema = require("./models/TLFManualRemoval");
 
 function initializeModels() {
   console.log("Checking for Models...");
@@ -94,6 +95,10 @@ function initializeModels() {
       name: "TLFInfeedCursor",
       schema: TLFInfeedCursorSchema,
     },
+    TLFManualRemoval: {
+      name: "TLFManualRemoval",
+      schema: TLFManualRemovalSchema,
+    },
   };
 
   Object.entries(models).forEach(([key, { name, schema }]) => {
@@ -131,6 +136,7 @@ function initializeModels() {
     TLFSyncAudit: models.TLFSyncAudit.model,
     TLFInfeedLog: models.TLFInfeedLog.model,
     TLFInfeedCursor: models.TLFInfeedCursor.model,
+    TLFManualRemoval: models.TLFManualRemoval.model,
   };
 }
 
@@ -161,5 +167,6 @@ module.exports = {
     TLFSyncAuditSchema,
     TLFInfeedLogSchema,
     TLFInfeedCursorSchema,
+    TLFManualRemovalSchema,
   },
 };

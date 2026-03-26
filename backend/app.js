@@ -29,6 +29,7 @@ const orphanPanelsRoutes = require("./routes/orphanPanels");
 const edgeBandInventoryRoutes = require("./routes/edgeBandInventory");
 const tlfSyncAuditRoutes = require("./routes/tlfSyncAudit");
 const tlfInfeedLogRoutes = require("./routes/tlfInfeedLog");
+const tlfManualRemovalRoutes = require("./routes/tlfManualRemoval");
 
 const app = express();
 
@@ -96,6 +97,7 @@ app.use("/orphanPanels", orphanPanelsRoutes);
 app.use("/edgeBandInventory", edgeBandInventoryRoutes);
 app.use("/tlfSyncAudit", tlfSyncAuditRoutes);
 app.use("/tlfInfeedLog", tlfInfeedLogRoutes);
+app.use("/tlfManualRemoval", tlfManualRemovalRoutes);
 
 // Run Once on startup
 tlfSyncService.syncOnce();

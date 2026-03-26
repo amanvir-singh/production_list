@@ -60,6 +60,17 @@ const TLFInfeedCursor = mongoose.model(
   "TLFInfeedCursor",
 );
 
+const TLFManualRemoval = mongoose.model(
+  "TLFManualRemoval",
+  schemas.TLFManualRemovalSchema,
+  "TLFManualRemoval",
+);
+
+// Number of consecutive syncs a pending debt may sit unchanged before being
+// written off as a presumed manual removal. Each sync runs every 5 minutes,
+// so 8 syncs ≈ 40 minutes.
+const STALE_DEBT_THRESHOLD = 8;
+
 // Helper to recalc totals
 async function recalculateWarehouseTotals() {
   const allWhDocs = await WarehouseInventory.find({}).lean();
@@ -604,9 +615,11 @@ async function syncOnce() {
 
     const pendingDocs = await TLFPendingOutfeed.find({}).lean();
     const pendingMap = new Map();
+    const stableCountMap = new Map();
 
     for (const d of pendingDocs) {
       pendingMap.set(d.boardCode, toNum(d.qty, 0));
+      stableCountMap.set(d.boardCode, toNum(d.stableCount, 0));
     }
 
 
@@ -722,6 +735,12 @@ async function syncOnce() {
       boardAudit.snapshot.newTlfDebt = pendingAfter;
       pendingMap.set(boardCode, pendingAfter);
 
+      // Track how many consecutive syncs this debt has sat unchanged.
+      // Reset to 0 whenever debt is actively paid down or new debt is created.
+      const prevStable = stableCountMap.get(boardCode) || 0;
+      const debtIsUnchanged = pendingAfter > 0 && pendingCreated === 0 && tlfFromPending === 0;
+      stableCountMap.set(boardCode, debtIsUnchanged ? prevStable + 1 : 0);
+
       // Only as many events can be attributed to WAREHOUSE as the warehouse actually has
       const effectiveWarehouseForAttribution = existsInWarehouse
         ? Math.min(warehouseUsedForOutfeed, Math.max(0, currentWhQty))
@@ -819,32 +838,44 @@ async function syncOnce() {
     // 7d) write outfeed logs
     await insertOutfeedLogs(outfeedLogs);
 
-    // 7e) update pending outfeed
+    // 7e) update pending outfeed + write off stale debts
     const pendingOps = [];
+    const manualRemovalDocs = [];
     const nowTs = new Date();
 
     for (const [boardCode, qty] of pendingMap.entries()) {
-      if (qty > 0) {
+      const stableCount = stableCountMap.get(boardCode) || 0;
+
+      if (qty > 0 && stableCount >= STALE_DEBT_THRESHOLD) {
+        // Debt has sat unresolved for too long — presume manual removal
+        manualRemovalDocs.push({
+          boardCode,
+          qty,
+          detectedAt: nowTs,
+          staleSyncs: stableCount,
+          note: `Debt unresolved after ${stableCount} syncs, presumed manual removal`,
+        });
+        pendingOps.push({ deleteOne: { filter: { boardCode } } });
+      } else if (qty > 0) {
         pendingOps.push({
           updateOne: {
             filter: { boardCode },
-            update: {
-              $set: { qty, updatedAt: nowTs }
-            },
+            update: { $set: { qty, stableCount, updatedAt: nowTs } },
             upsert: true,
           },
         });
       } else {
-        pendingOps.push({
-          deleteOne: {
-            filter: { boardCode }
-          }
-        });
+        pendingOps.push({ deleteOne: { filter: { boardCode } } });
       }
     }
 
     if (pendingOps.length > 0) {
       await TLFPendingOutfeed.bulkWrite(pendingOps, { ordered: false });
+    }
+
+    if (manualRemovalDocs.length > 0) {
+      await TLFManualRemoval.insertMany(manualRemovalDocs, { ordered: false });
+      audit.summary.totalManualRemovals = manualRemovalDocs.length;
     }
 
 
