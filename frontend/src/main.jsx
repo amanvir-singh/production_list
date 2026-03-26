@@ -49,6 +49,13 @@ import EditJob from "./Pages/JobList/EditJob.jsx";
 import PartLabels from "./Pages/PartLabels/PartLabels.jsx";
 import LabelPreview from "./Pages/PartLabels/LabelPreview.jsx";
 import InventoryHome from "./Pages/Inventory/InventoryHome.jsx";
+import EdgeBandInventoryHome from "./Pages/EdgeBandInventory/EdgeBandInventoryHome.jsx";
+import EdgeBandHeightsList from "./Pages/EdgeBandHeights/EdgeBandHeightsList.jsx";
+import AddEdgeBandHeight from "./Pages/EdgeBandHeights/AddEdgeBandHeight.jsx";
+import EditEdgeBandHeight from "./Pages/EdgeBandHeights/EditEdgeBandHeight.jsx";
+import EdgeBandThicknessesList from "./Pages/EdgeBandThicknesses/EdgeBandThicknessesList.jsx";
+import AddEdgeBandThickness from "./Pages/EdgeBandThicknesses/AddEdgeBandThickness.jsx";
+import EditEdgeBandThickness from "./Pages/EdgeBandThicknesses/EditEdgeBandThickness.jsx";
 
 const AppWithEventListener = () => {
   const navigate = useNavigate();
@@ -167,6 +174,13 @@ const AppWithEventListener = () => {
         <Route path="/PartLabels" element={<PartLabels />} />
         <Route path="/labelpreview/view/:fileName" element={<LabelPreview />} />
         <Route path="/InventoryHome" element={<InventoryHome />} />
+        <Route path="/EdgeBandInventory" element={<EdgeBandInventoryHome />} />
+        <Route path="/manage/edgeBandHeightsList" element={<EdgeBandHeightsList />} />
+        <Route path="/add-edgeband-height" element={<AddEdgeBandHeight />} />
+        <Route path="/edit-edgeband-height/:id" element={<EditEdgeBandHeight />} />
+        <Route path="/manage/edgeBandThicknessesList" element={<EdgeBandThicknessesList />} />
+        <Route path="/add-edgeband-thickness" element={<AddEdgeBandThickness />} />
+        <Route path="/edit-edgeband-thickness/:id" element={<EditEdgeBandThickness />} />
       </Routes>
     </>
   );

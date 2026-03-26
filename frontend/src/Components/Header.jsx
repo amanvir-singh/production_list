@@ -51,6 +51,9 @@ const Header = () => {
               <a href="/InventoryHome">Inventory</a>
             </li>
             <li>
+              <a href="/EdgeBandInventory">Edgeband Inv.</a>
+            </li>
+            <li>
               <a href="/jobList">Job List</a>
             </li>
             <li>
@@ -99,6 +102,12 @@ const Header = () => {
                     </li>
                     <li>
                       <a href="/manage/EdgeBandList">EdgeBand</a>
+                    </li>
+                    <li>
+                      <a href="/manage/edgeBandHeightsList">Edgeband Heights</a>
+                    </li>
+                    <li>
+                      <a href="/manage/edgeBandThicknessesList">Edgeband Thicknesses</a>
                     </li>
                     <li>
                       <a href="/manage/jobListMaterialList">
