@@ -9,7 +9,7 @@ import DeleteConfirmationModal from "./DeleteConfirmationModal";
 const MaterialtoOrder = () => {
   const { user } = useContext(AuthContext);
   const canManage = user.role === "Editor" || user.role === "admin";
-  
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrderToMark, setSelectedOrderToMark] = useState(null);
@@ -18,7 +18,6 @@ const MaterialtoOrder = () => {
   const [suppliers, setSuppliers] = useState({});
   const printRef = useRef();
 
-
   // Delete modal state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -26,12 +25,16 @@ const MaterialtoOrder = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_ROUTE}/materialOrders`);
-      const toOrderItems = response.data
-      .filter(o => o.status === "To Order")
-      .sort((a, b) =>
-        a.supplier.localeCompare(b.supplier, undefined, { sensitivity: "base" })
+      const response = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/materialOrders`,
       );
+      const toOrderItems = response.data
+        .filter((o) => o.status === "To Order")
+        .sort((a, b) =>
+          a.supplier.localeCompare(b.supplier, undefined, {
+            sensitivity: "base",
+          }),
+        );
       setOrders(toOrderItems);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -41,19 +44,21 @@ const MaterialtoOrder = () => {
   };
 
   const fetchSuppliers = async () => {
-  try {
-    const res = await axios.get(`${import.meta.env.VITE_APP_ROUTE}/suppliers`);
-    
-    const supplierMap = {};
-    res.data.forEach(s => {
-      supplierMap[s.code] = s.name;
-    });
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_APP_ROUTE}/suppliers`,
+      );
 
-    setSuppliers(supplierMap);
-  } catch (error) {
-    console.error("Error fetching suppliers:", error);
-  }
-};
+      const supplierMap = {};
+      res.data.forEach((s) => {
+        supplierMap[s.code] = s.name;
+      });
+
+      setSuppliers(supplierMap);
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -69,13 +74,15 @@ const MaterialtoOrder = () => {
     if (!itemToDelete) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_APP_ROUTE}/materialOrders/${itemToDelete._id}`);
-      
-       await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
-         user: user.username,
-         action: `Deleted To-Order Material: ${itemToDelete.boardCode}`,
-         previousData: itemToDelete,
-         updatedData: null
+      await axios.delete(
+        `${import.meta.env.VITE_APP_ROUTE}/materialOrders/${itemToDelete._id}`,
+      );
+
+      await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+        user: user.username,
+        action: `Deleted To-Order Material: ${itemToDelete.boardCode}`,
+        previousData: itemToDelete,
+        updatedData: null,
       });
 
       fetchOrders();
@@ -98,53 +105,77 @@ const MaterialtoOrder = () => {
     const regex = new RegExp(`(${highlight})`, "gi");
     const parts = String(text).split(regex);
     return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>
+      regex.test(part) ? (
+        <mark key={i}>{part}</mark>
+      ) : (
+        <span key={i}>{part}</span>
+      ),
     );
   };
 
   const filteredOrders = orders.filter((order) => {
     const term = searchTerm.toLowerCase();
     return (
-        (order.supplier || "").toLowerCase().includes(term) ||
-        (order.code || "").toLowerCase().includes(term) ||
-        (order.finish || "").toLowerCase().includes(term) ||
-        (order.thickness || "").toLowerCase().includes(term) ||
-        (order.format || "").toLowerCase().includes(term)
+      (order.supplier || "").toLowerCase().includes(term) ||
+      (order.code || "").toLowerCase().includes(term) ||
+      (order.finish || "").toLowerCase().includes(term) ||
+      (order.thickness || "").toLowerCase().includes(term) ||
+      (order.format || "").toLowerCase().includes(term)
     );
   });
   const ordersBySupplier = filteredOrders.reduce((acc, order) => {
-  const supplier = order.supplier || "Unknown Supplier";
+    const supplier = order.supplier || "Unknown Supplier";
 
-  if (!acc[supplier]) {
-    acc[supplier] = [];
-  }
+    if (!acc[supplier]) {
+      acc[supplier] = [];
+    }
 
-  acc[supplier].push(order);
+    acc[supplier].push(order);
 
-  return acc;
-}, {});
+    return acc;
+  }, {});
 
   if (editingOrder) {
-      return (
-          <div className="material-to-order-edit">
-              <button className="back-btn" onClick={() => setEditingOrder(null)}>← Back to List</button>
-              <AddMaterialOrder 
-                mode="edit" 
-                initialData={editingOrder} 
-                onSuccess={() => {
-                    setEditingOrder(null);
-                    fetchOrders();
-                }}
-                onCancel={() => setEditingOrder(null)}
-              />
-          </div>
-      )
+    return (
+      <div className="material-to-order-edit">
+        <button className="back-btn" onClick={() => setEditingOrder(null)}>
+          ← Back to List
+        </button>
+        <AddMaterialOrder
+          mode="edit"
+          initialData={editingOrder}
+          onSuccess={() => {
+            setEditingOrder(null);
+            fetchOrders();
+          }}
+          onCancel={() => setEditingOrder(null)}
+        />
+      </div>
+    );
   }
 
+  const getBundleDisplay = (order) => {
+    const qty = order.orderedQty;
+
+    let bundleSize = null;
+
+    if (order.supplier === "U") bundleSize = 18;
+    if (order.supplier === "T") bundleSize = 19;
+
+    if (!bundleSize) return qty; // fallback
+
+    const bundles = Math.ceil(qty / bundleSize);
+
+    return (
+      <>
+        <strong>{bundles} bundles</strong> ({qty} sheets)
+      </>
+    );
+  };
+
   return (
-    
     <div className="material-to-order" ref={printRef}>
-      <DeleteConfirmationModal 
+      <DeleteConfirmationModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDelete}
@@ -158,22 +189,31 @@ const MaterialtoOrder = () => {
       ) : orders.length === 0 ? (
         <p className="no-data">No materials waiting to be ordered.</p>
       ) : (
-          <div className="table-container">
-            <h1>Materials To Order</h1>
-           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' , marginRight: '15px'}}>
+        <div className="table-container">
+          <h1>Materials To Order</h1>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "15px",
+              marginRight: "15px",
+            }}
+          >
             <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-            /><button className="print-button" onClick={handlePrint}>
-                        Print
-                </button>
-            </div>
-            {Object.entries(ordersBySupplier).map(([supplier, supplierOrders]) => (
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <button className="print-button" onClick={handlePrint}>
+              Print
+            </button>
+          </div>
+          {Object.entries(ordersBySupplier).map(
+            ([supplier, supplierOrders]) => (
               <div className="supplier-group" key={supplier}>
-                
                 <h2 className="supplier-title">
                   {suppliers[supplier] || supplier}
                 </h2>
@@ -186,22 +226,32 @@ const MaterialtoOrder = () => {
                       <th>Finish</th>
                       <th>Thickness</th>
                       <th>Format</th>
-                      <th>Qty to Order</th>
+                      <th>
+                        <span className="screen-only">Qty to Order</span>
+                        <span className="print-only">Bundles to Order</span>
+                      </th>
                       <th>Date Added</th>
                       {canManage && <th>Actions</th>}
                     </tr>
                   </thead>
 
                   <tbody>
-                    {supplierOrders.map(order => (
+                    {supplierOrders.map((order) => (
                       <tr key={order._id}>
                         <td>{highlightText(order.supplier, searchTerm)}</td>
                         <td>{highlightText(order.code, searchTerm)}</td>
                         <td>{highlightText(order.finish, searchTerm)}</td>
                         <td>{highlightText(order.thickness, searchTerm)}</td>
                         <td>{highlightText(order.format, searchTerm)}</td>
-                        <td>{order.orderedQty}</td>
-                        <td>{order.createdAt.split('T')[0]}</td>
+                        <td>
+                          <span className="screen-only">
+                            {order.orderedQty}
+                          </span>
+                          <span className="print-only">
+                            {getBundleDisplay(order)}
+                          </span>
+                        </td>
+                        <td>{order.createdAt.split("T")[0]}</td>
 
                         {canManage && (
                           <td className="action-cell">
@@ -231,21 +281,21 @@ const MaterialtoOrder = () => {
                     ))}
                   </tbody>
                 </table>
-
               </div>
-            ))}
+            ),
+          )}
         </div>
       )}
 
       {selectedOrderToMark && (
         <MarkOrderedModal
-            isOpen={!!selectedOrderToMark}
-            order={selectedOrderToMark}
-            onClose={() => setSelectedOrderToMark(null)}
-            onSuccess={() => {
-                setSelectedOrderToMark(null);
-                fetchOrders();
-            }}
+          isOpen={!!selectedOrderToMark}
+          order={selectedOrderToMark}
+          onClose={() => setSelectedOrderToMark(null)}
+          onSuccess={() => {
+            setSelectedOrderToMark(null);
+            fetchOrders();
+          }}
         />
       )}
     </div>
