@@ -299,11 +299,11 @@ const InventoryList = ({ onEdit = () => {} }) => {
     es.addEventListener("tlf_snapshot_agg", (event) => {
       try {
         const payload = JSON.parse(event.data);
-        // payload
         setTlfAgg({
           fetchedAt: payload.fetchedAt || null,
           qtyByKey: payload.qtyByKey || {},
         });
+        fetchInventory();
       } catch (e) {
         console.error("Error parsing tlf_snapshot_agg:", e);
       }
