@@ -199,6 +199,7 @@ const OrderHistory = () => {
                                     <th>Qty Ordered</th>
                                     <th>Qty Received</th>
                                     <th>Date Ordered</th>
+                                    <th>Note</th>
                                     {isAdmin && <th>Actions</th>}
                                 </tr>
                             </thead>
@@ -218,6 +219,7 @@ const OrderHistory = () => {
                                         <td>{order.orderedQty}</td>
                                         <td>{order.receivedQty || '-'}</td> 
                                         <td>{formatDate(order.orderedDate)}</td>
+                                        <td className="note-cell">{order.note || "-"}</td>
                                         {isAdmin && (
                                             <td className="action-cell">
                                                 <button 

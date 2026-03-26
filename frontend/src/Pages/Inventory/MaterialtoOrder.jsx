@@ -231,6 +231,7 @@ const MaterialtoOrder = () => {
                         <span className="print-only">Bundles to Order</span>
                       </th>
                       <th>Date Added</th>
+                      <th>Note</th>
                       {canManage && <th>Actions</th>}
                     </tr>
                   </thead>
@@ -252,6 +253,7 @@ const MaterialtoOrder = () => {
                           </span>
                         </td>
                         <td>{order.createdAt.split("T")[0]}</td>
+                        <td className="note-cell">{order.note || "-"}</td>
 
                         {canManage && (
                           <td className="action-cell">

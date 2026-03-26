@@ -51,6 +51,10 @@ const materialOrderSchema = new mongoose.Schema(
       default: "To Order",
       required: true,
     },
+    note: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

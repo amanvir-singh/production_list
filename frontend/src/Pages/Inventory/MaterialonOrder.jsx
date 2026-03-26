@@ -199,6 +199,7 @@ const MaterialonOrder = () => {
                                     <th>Format</th>
                                     <th>Ordered Qty</th>
                                     <th>Date Ordered</th>
+                                    <th>Note</th>
                                     {canManage && <th>Actions</th>}
                                 </tr>
                             </thead>
@@ -211,7 +212,8 @@ const MaterialonOrder = () => {
                                         <td>{highlightText(order.thickness, searchTerm)}</td>
                                         <td>{highlightText(order.format, searchTerm)}</td>
                                         <td>{order.orderedQty}</td>
-                                        <td>{order.orderedDate.split('T')[0]} </td>
+                                        <td>{order.orderedDate.split('T')[0]}</td>
+                                        <td className="note-cell">{order.note || "-"}</td>
                                         {canManage && (
                                             <td className="action-cell">
                                                 <button 

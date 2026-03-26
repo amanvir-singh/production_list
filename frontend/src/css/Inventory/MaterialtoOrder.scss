@@ -185,6 +185,12 @@
         background-color: #fafafa;
       }
 
+      .note-cell {
+        max-width: 200px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
       .action-cell {
         display: flex;
         justify-content: center;

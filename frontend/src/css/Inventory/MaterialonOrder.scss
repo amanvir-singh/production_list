@@ -173,6 +173,14 @@
                     background-color: #fafafa;
                 }
 
+                .note-cell {
+                    max-width: 200px;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    color: #555;
+                    font-size: 0.9rem;
+                }
+
                 .action-cell {
                     display: flex;
                     gap: 0.5rem;

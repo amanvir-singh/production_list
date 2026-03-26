@@ -26,17 +26,18 @@ const AddMaterialOrder = ({
   const [code, setCode] = useState("");
   const [thickness, setThickness] = useState("");
   const [format, setFormat] = useState("");
-  
+
   const [qtyOrdered, setQtyOrdered] = useState("");
   const [anticipatedDate, setAnticipatedDate] = useState("");
   const [status, setStatus] = useState("To Order");
+  const [note, setNote] = useState("");
 
   // Fetch warehouse inventory on mount
   useEffect(() => {
     const fetchWarehouseInventory = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_APP_ROUTE}/warehouseInventory`
+          `${import.meta.env.VITE_APP_ROUTE}/warehouseInventory`,
         );
         setWarehouseInventory(response.data || []);
       } catch (error) {
@@ -59,16 +60,19 @@ const AddMaterialOrder = ({
       setFormat(initialData.format);
       setQtyOrdered(initialData.orderedQty);
       if (initialData.anticipatedDate) {
-        setAnticipatedDate(initialData.anticipatedDate.split('T')[0]);
+        setAnticipatedDate(initialData.anticipatedDate.split("T")[0]);
       }
       setStatus(initialData.status);
+      setNote(initialData.note || "");
 
-      const match = warehouseInventory.find(w => w.boardCode === initialData.boardCode);
-      if(match) {
-         if(match.aggregationKey) setSelectedIdentifier(match.aggregationKey);
-         else setSelectedIdentifier(match.boardCode);
+      const match = warehouseInventory.find(
+        (w) => w.boardCode === initialData.boardCode,
+      );
+      if (match) {
+        if (match.aggregationKey) setSelectedIdentifier(match.aggregationKey);
+        else setSelectedIdentifier(match.boardCode);
       } else {
-         setSelectedIdentifier(initialData.boardCode); 
+        setSelectedIdentifier(initialData.boardCode);
       }
     }
   }, [isEdit, initialData, warehouseInventory]);
@@ -86,13 +90,10 @@ const AddMaterialOrder = ({
       }
     });
 
-    return Array.from(options).sort().map(opt => ({ value: opt, label: opt }));
+    return Array.from(options)
+      .sort()
+      .map((opt) => ({ value: opt, label: opt }));
   }, [warehouseInventory]);
-
-
-
-
-
 
   const handleIdentifierChange = (selectedOption) => {
     const value = selectedOption ? selectedOption.value : "";
@@ -108,9 +109,10 @@ const AddMaterialOrder = ({
       return;
     }
 
-    const match = warehouseInventory.find(item => 
+    const match = warehouseInventory.find(
+      (item) =>
         (item.aggregationKey && item.aggregationKey === value) ||
-        (!item.aggregationKey && item.boardCode === value)
+        (!item.aggregationKey && item.boardCode === value),
     );
 
     if (match) {
@@ -121,14 +123,14 @@ const AddMaterialOrder = ({
       setFormat(match.format);
 
       if (match.aggregationKey && match.aggregationKey === value) {
-          const parts = value.split('_');
-          if (parts.length > 2) {
-              setFinish(parts[2]);
-          } else {
-              setFinish(match.finish);
-          }
-      } else {
+        const parts = value.split("_");
+        if (parts.length > 2) {
+          setFinish(parts[2]);
+        } else {
           setFinish(match.finish);
+        }
+      } else {
+        setFinish(match.finish);
       }
     }
   };
@@ -137,54 +139,52 @@ const AddMaterialOrder = ({
     e.preventDefault();
 
     if (!boardCode) {
-        setBackendError("Please select a valid material.");
-        return;
+      setBackendError("Please select a valid material.");
+      return;
     }
 
     const payload = {
-        boardCode : selectedIdentifier,
-        supplier,
-        finish,
-        code,
-        thickness,
-        format,
-        orderedQty: Number(qtyOrdered),
-        anticipatedDate: anticipatedDate ? new Date(anticipatedDate) : null,
-        status
+      boardCode: selectedIdentifier,
+      supplier,
+      finish,
+      code,
+      thickness,
+      format,
+      orderedQty: Number(qtyOrdered),
+      anticipatedDate: anticipatedDate ? new Date(anticipatedDate) : null,
+      status,
+      note,
     };
 
     try {
-        if (isEdit && initialData?._id) {
-            await axios.put(
-                `${import.meta.env.VITE_APP_ROUTE}/materialOrders/${initialData._id}`,
-                payload
-            );
+      if (isEdit && initialData?._id) {
+        await axios.put(
+          `${import.meta.env.VITE_APP_ROUTE}/materialOrders/${initialData._id}`,
+          payload,
+        );
 
-            await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
-                user: user.username,
-                action: `Edited Material Order: ${payload.boardCode}`,
-                previousData: initialData,
-                updatedData: payload,
-            });
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Edited Material Order: ${payload.boardCode}`,
+          previousData: initialData,
+          updatedData: payload,
+        });
+      } else {
+        await axios.post(
+          `${import.meta.env.VITE_APP_ROUTE}/materialOrders/add`,
+          payload,
+        );
+        await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
+          user: user.username,
+          action: `Added Material Order: ${payload.boardCode}`,
+          updatedData: payload,
+        });
+      }
 
-            
-        } else {
-            await axios.post(
-                `${import.meta.env.VITE_APP_ROUTE}/materialOrders/add`,
-                payload
-            );
-            await axios.post(`${import.meta.env.VITE_APP_ROUTE}/logs/add`, {
-                user: user.username,
-                action: `Added Material Order: ${payload.boardCode}`,
-                updatedData: payload,
-            });
-
-        }
-
-        if (typeof onSuccess === "function") onSuccess();
+      if (typeof onSuccess === "function") onSuccess();
     } catch (error) {
-        console.error("Error saving material order:", error);
-        setBackendError(error.response?.data?.message || "Failed to save order.");
+      console.error("Error saving material order:", error);
+      setBackendError(error.response?.data?.message || "Failed to save order.");
     }
   };
 
@@ -202,12 +202,18 @@ const AddMaterialOrder = ({
         {canManageOrders ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="materialSelect">Select Material (Board Code):</label>
+              <label htmlFor="materialSelect">
+                Select Material (Board Code):
+              </label>
               <Select
                 id="materialSelect"
                 className="react-select-container"
                 classNamePrefix="react-select"
-                value={dropdownOptions.find(opt => opt.value === selectedIdentifier) || null}
+                value={
+                  dropdownOptions.find(
+                    (opt) => opt.value === selectedIdentifier,
+                  ) || null
+                }
                 onChange={handleIdentifierChange}
                 options={dropdownOptions}
                 isClearable
@@ -262,38 +268,56 @@ const AddMaterialOrder = ({
             </div>
 
             <div className="form-group">
-                <label htmlFor="anticipatedDate">Anticipated Delivery Date:</label>
-                <input 
-                    type="date" 
-                    id="anticipatedDate"
-                    value={anticipatedDate}
-                    onChange={(e) => setAnticipatedDate(e.target.value)}
-                />
+              <label htmlFor="anticipatedDate">
+                Anticipated Delivery Date:
+              </label>
+              <input
+                type="date"
+                id="anticipatedDate"
+                value={anticipatedDate}
+                onChange={(e) => setAnticipatedDate(e.target.value)}
+              />
             </div>
 
             <div className="form-group">
-                <label htmlFor="status">Status:</label>
-                <select 
-                    id="status" 
-                    value={status} 
-                    onChange={(e) => setStatus(e.target.value)}
-                    required
-                >
-                    <option value="To Order">To Order</option>
-                    <option value="On Order">On Order</option>
-                    <option value="Received">Received</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
+              <label htmlFor="status">Status:</label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                disabled
+              >
+                <option value="To Order">To Order</option>
+                <option value="On Order">On Order</option>
+                <option value="Received">Received</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="note">Note:</label>
+              <textarea
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Optional note..."
+                rows={3}
+              />
             </div>
 
             <button type="submit">
               {isEdit ? "Save Changes" : "Create Order"}
             </button>
-            
+
             {onCancel && (
-                <button type="button" className="secondary-btn" onClick={onCancel}>
-                    Cancel
-                </button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={onCancel}
+              >
+                Cancel
+              </button>
             )}
           </form>
         ) : (
