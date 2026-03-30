@@ -36,7 +36,6 @@
     }
 
     .eb-list__table-wrap {
-      overflow: visible;
       padding-bottom: 0;
     }
 
@@ -171,8 +170,8 @@
 
   // ── Table ─────────────────────────────────────────────────────────────────
   &__table-wrap {
-    overflow-x: auto;
-    padding-bottom: 120px;
+    overflow: visible;
+    padding-bottom: 220px;
   }
 
   &__table {

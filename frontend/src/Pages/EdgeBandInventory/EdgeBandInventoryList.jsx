@@ -10,6 +10,7 @@ const LOCATION_PREVIEW_LIMIT = 2;
 const EdgeBandInventoryList = ({ onEdit }) => {
   const { user } = useContext(AuthContext);
   const canEdit = EDITABLE_ROLES.includes(user?.role);
+  const canEditDelete = user?.role === "admin" || user?.role === "Editor";
   const printRef = useRef();
 
   const handlePrint = () => window.print();
@@ -329,18 +330,22 @@ const EdgeBandInventoryList = ({ onEdit }) => {
                           >
                             Deduct
                           </button>
-                          <button
-                            className="eb-list__btn eb-list__btn--edit"
-                            onClick={() => onEdit(eb)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="eb-list__btn eb-list__btn--delete"
-                            onClick={() => setDeleteModal(eb)}
-                          >
-                            Delete
-                          </button>
+                          {canEditDelete && (
+                            <button
+                              className="eb-list__btn eb-list__btn--edit"
+                              onClick={() => onEdit(eb)}
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {canEditDelete && (
+                            <button
+                              className="eb-list__btn eb-list__btn--delete"
+                              onClick={() => setDeleteModal(eb)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     )}
