@@ -3,6 +3,7 @@ import { AuthContext } from "../../Components/AuthContext";
 import "../../css/EdgeBandInventory/EdgeBandInventoryHome.scss";
 import EdgeBandInventoryList from "./EdgeBandInventoryList";
 import AddEdgeBand from "./AddEdgeBand";
+import BulkAddEdgeBand from "./BulkAddEdgeBand";
 import AddEdgeBandStock from "./AddEdgeBandStock";
 import EdgeBandLogs from "./EdgeBandLogs";
 
@@ -16,6 +17,8 @@ const EdgeBandInventoryHome = () => {
     user.role === "Manager" ||
     user.role === "admin" ||
     user.role === "Edgebander";
+
+  const isAdmin = user.role === "admin";
 
   const handleEditEdgeBandInventory = (row) => {
     setEditingEdgeBandInventory(row);
@@ -51,6 +54,13 @@ const EdgeBandInventoryHome = () => {
           />
         );
 
+      case "bulkAddEdgeBand":
+        return (
+          <BulkAddEdgeBand
+            onCancel={() => setActiveView("edgebandInventory")}
+          />
+        );
+
       case "addEdgeBandStock":
         return (
           <AddEdgeBandStock
@@ -73,7 +83,7 @@ const EdgeBandInventoryHome = () => {
         <div className="inventory-header__container">
           <div className="inventory-header__title">
             <h1>Edgeband Inventory Management</h1>
-            <h2>Edgeband Inventory · Add Edgeband · Add Stock · Logs</h2>
+            <h2>Edgeband Inventory · Add Edgeband · Bulk Add · Add Stock · Logs</h2>
           </div>
 
           <nav className="inventory-header__nav">
@@ -96,6 +106,16 @@ const EdgeBandInventoryHome = () => {
                   Add Edgeband
                 </button>
               </li>
+              {isAdmin && (
+                <li>
+                  <button
+                    className={`inventory-header__nav-btn ${activeView === "bulkAddEdgeBand" ? "active" : ""}`}
+                    onClick={() => setActiveView("bulkAddEdgeBand")}
+                  >
+                    Bulk Add
+                  </button>
+                </li>
+              )}
               <li>
                 <button
                   className={`inventory-header__nav-btn ${activeView === "addEdgeBandStock" ? "active" : ""}`}
