@@ -16,29 +16,32 @@ const EdgeBandLog = mongoose.model(
   "edgeBandLog"
 );
 
+const EdgeBandHeight = mongoose.model(
+  "edgeBandHeight",
+  schemas.edgeBandHeightSchema,
+  "edgeBandHeight"
+);
 
-function generateUniqueCode(code, height, thickness) {
-  let heightDecimal = height;
+const EdgeBandThickness = mongoose.model(
+  "edgeBandThickness",
+  schemas.edgeBandThicknessSchema,
+  "edgeBandThickness"
+);
 
-  const fractionMatch = height.match(/(\d+)\/(\d+)/);
-  if (fractionMatch) {
-    const numerator = parseFloat(fractionMatch[1]);
-    const denominator = parseFloat(fractionMatch[2]);
-    heightDecimal = (numerator / denominator).toFixed(3);
-  } else {
-    const numMatch = height.match(/[\d.]+/);
-    if (numMatch) {
-      heightDecimal = parseFloat(numMatch[0]).toFixed(3);
-    }
-  }
+function generateUniqueCode(code, heightCode, thicknessCode) {
+  return `${code}_${heightCode}_${thicknessCode}`;
+}
 
-  let thicknessNormalized = thickness;
-  const thickMatch = thickness.match(/[\d.]+/);
-  if (thickMatch) {
-    thicknessNormalized = parseFloat(thickMatch[0]).toFixed(1);
-  }
+async function resolveHeightCode(heightName) {
+  const heightDoc = await EdgeBandHeight.findOne({ name: heightName });
+  if (!heightDoc) throw new Error(`Height "${heightName}" not found in edgeBandHeight collection`);
+  return heightDoc.code;
+}
 
-  return `${code}_${heightDecimal}_${thicknessNormalized}`;
+async function resolveThicknessCode(thicknessName) {
+  const thicknessDoc = await EdgeBandThickness.findOne({ name: thicknessName });
+  if (!thicknessDoc) throw new Error(`Thickness "${thicknessName}" not found in edgeBandThickness collection`);
+  return thicknessDoc.code;
 }
 
 function calculateTotalQty(locations) {
@@ -65,7 +68,9 @@ router.post("/add", async (req, res) => {
       });
     }
 
-    const uniqueCode = generateUniqueCode(code, height, thickness);
+    const heightCode = await resolveHeightCode(height);
+    const thicknessCode = await resolveThicknessCode(thickness);
+    const uniqueCode = generateUniqueCode(code, heightCode, thicknessCode);
     const totalQty = calculateTotalQty(locations || []);
 
     const edgeBand = new EdgeBandInventory({
@@ -134,10 +139,20 @@ router.get("/:id", async (req, res) => {
 // Update
 router.put("/:id", async (req, res) => {
   try {
-    const { locations, user } = req.body;
+    const { locations, user, code, height, thickness } = req.body;
 
     if (locations) {
       req.body.totalQty = calculateTotalQty(locations);
+    }
+
+    if (code || height || thickness) {
+      const previous = await EdgeBandInventory.findById(req.params.id).lean();
+      const resolvedCode = code || previous.code;
+      const resolvedHeight = height || previous.height;
+      const resolvedThickness = thickness || previous.thickness;
+      const heightCode = await resolveHeightCode(resolvedHeight);
+      const thicknessCode = await resolveThicknessCode(resolvedThickness);
+      req.body.uniqueCode = generateUniqueCode(resolvedCode, heightCode, thicknessCode);
     }
 
     const previous = await EdgeBandInventory.findById(req.params.id).lean();
