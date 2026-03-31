@@ -31,7 +31,7 @@ const EditUser = () => {
   const fetchUser = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_APP_ROUTE}/users/${id}`
+        `${import.meta.env.VITE_APP_ROUTE}/users/${id}`,
       );
       const { username, email, role } = response.data;
       setUsername(username);
@@ -52,7 +52,7 @@ const EditUser = () => {
 
     if (username.length < 3 || username.includes("@")) {
       setUsernameError(
-        "Username must be at least 3 characters and should not contain '@'."
+        "Username must be at least 3 characters and should not contain '@'.",
       );
       isValid = false;
     }
@@ -82,7 +82,7 @@ const EditUser = () => {
     try {
       // Fetch the original user data before updating
       const originalResponse = await axios.get(
-        `${import.meta.env.VITE_APP_ROUTE}/users/${id}`
+        `${import.meta.env.VITE_APP_ROUTE}/users/${id}`,
       );
       const originalUserData = originalResponse.data;
 
@@ -94,7 +94,7 @@ const EditUser = () => {
       // Update the user
       await axios.put(
         `${import.meta.env.VITE_APP_ROUTE}/users/${id}`,
-        userData
+        userData,
       );
 
       // Log the action (without password)
@@ -114,7 +114,7 @@ const EditUser = () => {
       console.error("Error updating user:", error);
       setBackendError(
         error.response?.data?.message ||
-          "An error occurred while updating the user."
+          "An error occurred while updating the user.",
       );
     }
   };
@@ -163,6 +163,7 @@ const EditUser = () => {
               <option value="Inventory Associate">Inventory Associate</option>
               <option value="Editor">Editor</option>
               <option value="Manager">Manager</option>
+              <option value="Edgebander">Edgebander</option>
               <option value="admin">Admin</option>
             </select>
           </div>

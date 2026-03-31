@@ -30,7 +30,7 @@ const AddUser = () => {
 
     if (username.length < 3 || username.includes("@")) {
       setUsernameError(
-        "Username must be at least 3 characters and should not contain '@'."
+        "Username must be at least 3 characters and should not contain '@'.",
       );
       isValid = false;
     }
@@ -70,7 +70,7 @@ const AddUser = () => {
           email,
           password,
           role,
-        }
+        },
       );
 
       // Log the action (without password)
@@ -85,7 +85,7 @@ const AddUser = () => {
       console.error("Error adding user:", error);
       setBackendError(
         error.response?.data?.message ||
-          "An error occurred while adding the user."
+          "An error occurred while adding the user.",
       );
     }
   };
@@ -158,6 +158,7 @@ const AddUser = () => {
               <option value="Inventory Associate">Inventory Associate</option>
               <option value="Editor">Editor</option>
               <option value="Manager">Manager</option>
+              <option value="Edgebander">Edgebander</option>
               <option value="admin">Admin</option>
             </select>
           </div>
