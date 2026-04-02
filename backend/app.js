@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
@@ -74,6 +75,9 @@ app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json());
+
+// Static files — IE11-compatible edgeband page
+app.use("/ie", express.static(path.join(__dirname, "public", "edgeband-ie")));
 
 // Routes
 app.use("/users", usersRoutes);

@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edgeband Inventory</title>
+<style>
+/* ═══ Reset & Base ═══════════════════════════════════════════════════════ */
+*, *:before, *:after { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #333; background: #f7f7f7; }
+h1,h2,h3,p { margin: 0; }
+input, select, textarea, button { font-family: inherit; font-size: inherit; }
+table { border-collapse: collapse; }
+
+/* ═══ Login Screen ═══════════════════════════════════════════════════════ */
+.login-screen {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-align: center; align-items: center;
+  -ms-flex-pack: center; justify-content: center;
+  min-height: 100vh;
+  background: #e3f2fd;
+}
+.login-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2.5rem 2rem;
+  width: 360px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.login-card h1 { font-size: 1.5rem; color: #333; margin-bottom: 0.3rem; }
+.login-card p { color: #888; font-size: 0.9rem; margin-bottom: 1.5rem; }
+.login-field { margin-bottom: 1rem; text-align: left; }
+.login-field label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 0.3rem; }
+.login-field input { width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; outline: none; }
+.login-field input:focus { border-color: #2196f3; }
+.login-btn { width: 100%; padding: 0.65rem; background: #2196f3; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+.login-btn:hover { background: #1565c0; }
+.login-error { color: #e53935; font-size: 0.85rem; margin-top: 0.75rem; display: none; }
+
+/* ═══ App Shell ══════════════════════════════════════════════════════════ */
+.app { display: none; }
+
+/* ═══ Header ═════════════════════════════════════════════════════════════ */
+.inventory-header {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  border-bottom: 1px solid #e0e0e0;
+}
+.inventory-header__container {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-pack: justify; justify-content: space-between;
+  -ms-flex-align: center; align-items: center;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+.inventory-header__title h1 { font-size: 1.6rem; color: #333; font-weight: 700; }
+.inventory-header__title h2 { font-size: 1rem; color: #666; margin-top: 0.25rem; font-weight: 500; }
+.inventory-header__nav ul {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-wrap: wrap; flex-wrap: wrap;
+  list-style: none;
+  margin: 0; padding: 0;
+}
+.inventory-header__nav li { margin: 0 0.375rem 0.375rem 0.375rem; }
+.nav-btn {
+  background: #fff; color: #555;
+  border: 1px solid #d0d0d0;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.nav-btn:hover, .nav-btn.active {
+  background: #2196f3; color: #fff;
+  border-color: #2196f3;
+  box-shadow: 0 2px 6px rgba(33,150,243,0.4);
+}
+.user-info { font-size: 0.85rem; color: #666; }
+.user-info strong { color: #333; }
+.logout-btn {
+  background: #f0f0f0; color: #555; border: 1px solid #ccc;
+  padding: 0.35rem 0.8rem; border-radius: 5px; cursor: pointer;
+  font-size: 0.82rem; margin-left: 0.75rem;
+}
+.logout-btn:hover { background: #e0e0e0; }
+
+/* ═══ Content Area ═══════════════════════════════════════════════════════ */
+.inventory-home__content {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 2rem;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ═══ Inventory List ═════════════════════════════════════════════════════ */
+.eb-list { max-width: 780px; margin: 0 auto; padding: 0; }
+.eb-list__controls {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-align: stretch; align-items: stretch;
+  -ms-flex-wrap: wrap; flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.eb-list__search {
+  width: 200px;
+  min-height: 38px;
+  padding: 0 0.65rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  outline: none;
+  margin-right: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+.eb-list__search:focus { border-color: #2196f3; }
+.eb-list__filters {
+  display: -ms-flexbox; display: flex;
+  -ms-flex: 1 1 0px; flex: 1 1 0px;
+  min-width: 0;
+}
+/* Multi-select dropdown */
+.ms-wrap {
+  position: relative;
+  -ms-flex: 1 1 0px; flex: 1 1 0px;
+  min-width: 130px;
+  max-width: 220px;
+  margin-right: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.ms-toggle {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 2rem 0 0.6rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  line-height: 36px;
+  color: #333;
+}
+.ms-toggle:after {
+  content: "\25BC";
+  position: absolute;
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  line-height: 38px;
+  font-size: 0.65rem;
+  color: #888;
+  pointer-events: none;
+}
+.ms-toggle:hover { border-color: #2196f3; }
+.ms-toggle.ms-open { border-color: #2196f3; border-radius: 6px 6px 0 0; }
+.ms-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #2196f3;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.ms-dropdown.ms-open { display: block; }
+.ms-option {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.ms-option:hover { background: #e3f2fd; }
+.ms-option input[type="checkbox"] { margin-right: 0.4rem; vertical-align: middle; }
+.ms-option label { cursor: pointer; vertical-align: middle; }
+.eb-list__print-btn {
+  background: #795548; color: #fff;
+  border: none; padding: 0 1.4rem;
+  border-radius: 6px; cursor: pointer;
+  font-size: 0.95rem; font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 0.4rem;
+}
+.eb-list__print-btn:hover { background: #5d4037; }
+.eb-list__clear-btn {
+  display: none;
+  background: #e53935; color: #fff;
+  border: none; padding: 0 1.2rem;
+  border-radius: 6px; cursor: pointer;
+  font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.eb-list__clear-btn:hover { background: #c62828; }
+.eb-list__clear-btn.visible { display: inline-block; }
+.eb-list__status { padding: 1.5rem; color: #666; font-size: 0.9rem; text-align: center; }
+.eb-list__status--error { color: #e53935; }
+.eb-list__table-wrap { overflow: visible; padding-bottom: 220px; }
+.eb-list__table { width: 100%; font-size: 0.875rem; }
+.eb-list__table th {
+  background: #37474f; color: #fff;
+  text-align: center; padding: 0.3rem 0.55rem;
+  font-weight: 600; font-size: 1rem;
+  letter-spacing: 0.3px; white-space: nowrap;
+  border: 1px solid #455a64;
+}
+.eb-list__table td {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid #dde2e6;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 1.2rem;
+}
+.eb-list__table tbody tr:nth-child(even) { background: #f8f9fa; }
+.eb-list__table tbody tr:hover { background: #e3f2fd; }
+.eb-list__qty { font-weight: 600; color: #2e7d32; }
+.eb-list__empty { text-align: center; color: #aaa; padding: 2rem !important; font-style: italic; }
+.eb-list__loc-tag {
+  display: inline-block;
+  background: #f0f4f8;
+  border: 1px solid #cfd8dc;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  font-family: monospace;
+  margin: 1px;
+}
+.eb-list__loc-empty { color: #bbb; }
+.eb-list__loc-more {
+  display: inline-block;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  color: #1565c0;
+  cursor: help;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* Action buttons 2x2 */
+.eb-list__actions { padding: 0.3rem 0.4rem !important; }
+.eb-list__actions-grid { width: 126px; margin: 0 auto; overflow: hidden; }
+.eb-list__btn {
+  float: left;
+  width: 60px;
+  margin: 1px 1px;
+  padding: 0.26rem 0.2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  color: #fff;
+}
+.eb-list__btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+.eb-list__btn--add { background: #4caf50; }
+.eb-list__btn--deduct { background: #ff9800; }
+.eb-list__btn--edit { background: #2196f3; }
+.eb-list__btn--delete { background: #e53935; }
+.eb-list__btn:hover { opacity: 0.88; }
+
+/* ═══ Modal ══════════════════════════════════════════════════════════════ */
+.eb-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+}
+.eb-modal-overlay.visible {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-align: center; align-items: center;
+  -ms-flex-pack: center; justify-content: center;
+}
+.eb-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.75rem 2rem;
+  min-width: 340px;
+  max-width: 460px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.eb-modal h3 { margin: 0 0 1.25rem; font-size: 1.05rem; color: #333; }
+.eb-modal p { margin: 0 0 1.25rem; color: #555; }
+.eb-modal__field { margin-bottom: 1rem; }
+.eb-modal__field label { display: block; font-size: 0.82rem; font-weight: 600; color: #555; margin-bottom: 0.3rem; }
+.eb-modal__field input,
+.eb-modal__field select {
+  width: 100%;
+  padding: 0.42rem 0.65rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.88rem;
+  outline: none;
+}
+.eb-modal__field input:focus,
+.eb-modal__field select:focus { border-color: #2196f3; }
+.eb-modal__error { color: #e53935; font-size: 0.82rem; margin: 0 0 0.75rem; }
+.eb-modal__actions {
+  display: -ms-flexbox; display: flex;
+  margin-top: 0.5rem;
+}
+.eb-modal__actions button { margin-right: 0.65rem; }
+.modal-btn {
+  padding: 0.48rem 1.1rem;
+  border: none; border-radius: 6px;
+  cursor: pointer; font-size: 0.88rem; font-weight: 500;
+}
+.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn--confirm { background: #2196f3; color: #fff; }
+.modal-btn--confirm:hover:not([disabled]) { background: #1565c0; }
+.modal-btn--cancel { background: #f0f0f0; color: #333; }
+.modal-btn--cancel:hover { background: #e0e0e0; }
+.modal-btn--delete { background: #e53935; color: #fff; }
+.modal-btn--delete:hover:not([disabled]) { background: #b71c1c; }
+
+/* ═══ Add / Edit Edgeband ════════════════════════════════════════════════ */
+.add-eb {
+  max-width: 520px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.add-eb__title { font-size: 1.3rem; font-weight: 700; color: #333; margin-bottom: 1.5rem; }
+.add-eb__field { margin-bottom: 1.1rem; }
+.add-eb__field label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; }
+.add-eb__field input,
+.add-eb__field select {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc; border-radius: 6px;
+  font-size: 0.9rem; outline: none;
+}
+.add-eb__field input:focus,
+.add-eb__field select:focus { border-color: #2196f3; }
+.add-eb__error { color: #e53935; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.add-eb__success { color: #388e3c; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.add-eb__actions {
+  display: -ms-flexbox; display: flex;
+  margin-top: 0.5rem;
+}
+.add-eb__actions button { margin-right: 0.75rem; }
+.add-eb__btn {
+  padding: 0.55rem 1.4rem; border: none; border-radius: 6px;
+  font-size: 0.9rem; font-weight: 500; cursor: pointer;
+}
+.add-eb__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.add-eb__btn--submit { background: #2196f3; color: #fff; }
+.add-eb__btn--submit:hover:not([disabled]) { background: #1565c0; }
+.add-eb__btn--cancel { background: #f0f0f0; color: #333; }
+.add-eb__btn--cancel:hover { background: #e0e0e0; }
+.add-eb__no-permission { color: #999; font-style: italic; padding: 1rem; }
+
+/* ═══ Add Stock ══════════════════════════════════════════════════════════ */
+.add-eb-stock {
+  max-width: 520px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.add-eb-stock__title { font-size: 1.3rem; font-weight: 700; color: #333; margin-bottom: 1.5rem; }
+.add-eb-stock__field { margin-bottom: 1.1rem; }
+.add-eb-stock__field label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; }
+.add-eb-stock__field input,
+.add-eb-stock__field select {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc; border-radius: 6px;
+  font-size: 0.9rem; outline: none;
+}
+.add-eb-stock__field input:focus,
+.add-eb-stock__field select:focus { border-color: #2196f3; }
+.add-eb-stock__error { color: #e53935; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.add-eb-stock__success { color: #388e3c; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.add-eb-stock__no-permission { color: #999; font-style: italic; padding: 1rem; }
+.add-eb-stock__actions {
+  display: -ms-flexbox; display: flex;
+  margin-top: 0.5rem;
+}
+.add-eb-stock__actions button { margin-right: 0.75rem; }
+.add-eb-stock__btn {
+  padding: 0.55rem 1.4rem; border: none; border-radius: 6px;
+  font-size: 0.9rem; font-weight: 500; cursor: pointer;
+}
+.add-eb-stock__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.add-eb-stock__btn--submit { background: #4caf50; color: #fff; }
+.add-eb-stock__btn--submit:hover:not([disabled]) { background: #388e3c; }
+.add-eb-stock__btn--cancel { background: #f0f0f0; color: #333; }
+.add-eb-stock__btn--cancel:hover { background: #e0e0e0; }
+
+/* ═══ Bulk Add ═══════════════════════════════════════════════════════════ */
+.bulk-eb {
+  max-width: 680px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.bulk-eb__title { font-size: 1.3rem; font-weight: 700; color: #333; margin-bottom: 1.5rem; }
+.bulk-eb__row { overflow: hidden; margin-bottom: 1rem; }
+.bulk-eb__row .bulk-eb__field { float: left; width: 48%; }
+.bulk-eb__row .bulk-eb__field:first-child { margin-right: 4%; }
+.bulk-eb__field { margin-bottom: 1.1rem; }
+.bulk-eb__field label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; }
+.bulk-eb__label-hint { font-weight: 400 !important; color: #999; font-size: 0.8rem; }
+.bulk-eb__field select {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc; border-radius: 6px;
+  font-size: 0.9rem; outline: none; background: #fff;
+}
+.bulk-eb__textarea {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc; border-radius: 6px;
+  font-size: 0.9rem; outline: none;
+  resize: vertical; min-height: 80px;
+}
+.bulk-eb__textarea:focus,
+.bulk-eb__field select:focus { border-color: #2196f3; }
+.bulk-eb__preview { margin-top: 0.4rem; overflow: hidden; }
+.bulk-eb__tag {
+  display: inline-block;
+  background: #e3f2fd; color: #1565c0;
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem; font-weight: 500;
+  margin: 0.15rem;
+}
+.bulk-eb__error { color: #e53935; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.bulk-eb__no-permission { color: #999; font-style: italic; padding: 1rem; }
+.bulk-eb__actions {
+  display: -ms-flexbox; display: flex;
+  margin-top: 0.5rem;
+}
+.bulk-eb__actions button { margin-right: 0.75rem; }
+.bulk-eb__btn {
+  padding: 0.55rem 1.4rem; border: none; border-radius: 6px;
+  font-size: 0.9rem; font-weight: 500; cursor: pointer;
+}
+.bulk-eb__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.bulk-eb__btn--submit { background: #2196f3; color: #fff; }
+.bulk-eb__btn--submit:hover:not([disabled]) { background: #1565c0; }
+.bulk-eb__btn--reset { background: #fff3e0; color: #e65100; }
+.bulk-eb__btn--reset:hover:not([disabled]) { background: #ffe0b2; }
+.bulk-eb__btn--cancel { background: #f0f0f0; color: #333; }
+.bulk-eb__btn--cancel:hover:not([disabled]) { background: #e0e0e0; }
+.bulk-eb__results { margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1.25rem; }
+.bulk-eb__results-summary { margin-bottom: 0.9rem; }
+.bulk-eb__summary-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  margin-right: 0.5rem; margin-bottom: 0.3rem;
+}
+.bulk-eb__summary-badge--success { background: #e8f5e9; color: #2e7d32; }
+.bulk-eb__summary-badge--dupe { background: #fff8e1; color: #f57f17; }
+.bulk-eb__summary-badge--error { background: #ffebee; color: #c62828; }
+.bulk-eb__table { width: 100%; font-size: 0.875rem; }
+.bulk-eb__table th {
+  text-align: left; padding: 0.5rem 0.75rem;
+  background: #f5f5f5; color: #555;
+  font-weight: 600; border-bottom: 1px solid #e0e0e0;
+}
+.bulk-eb__table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+.bulk-eb__row--success td { color: #2e7d32; }
+.bulk-eb__row--duplicate td { color: #f57f17; }
+.bulk-eb__row--error td { color: #c62828; }
+
+/* ═══ Logs ═══════════════════════════════════════════════════════════════ */
+.eb-logs__header { margin-bottom: 1rem; color: #666; font-size: 0.9rem; }
+.eb-logs__count { font-weight: 500; }
+.eb-logs__controls {
+  display: -ms-flexbox; display: flex;
+  margin-bottom: 1rem;
+}
+.eb-logs__search {
+  width: 280px; min-height: 38px;
+  padding: 0 0.65rem;
+  border: 1px solid #d0d0d0; border-radius: 6px;
+  font-size: 0.875rem; outline: none;
+}
+.eb-logs__search:focus { border-color: #2196f3; }
+.eb-logs__status { text-align: center; padding: 2rem; color: #666; }
+.eb-logs__status--error { color: #e53935; }
+.eb-logs__table-wrap { overflow-x: auto; }
+.eb-logs__table { width: 100%; font-size: 0.875rem; }
+.eb-logs__table th {
+  background: #f0f0f0; text-align: left;
+  padding: 0.65rem 0.9rem; border-bottom: 2px solid #ddd;
+  font-weight: 600; white-space: nowrap;
+}
+.eb-logs__table td {
+  padding: 0.55rem 0.9rem; border-bottom: 1px solid #ebebeb;
+  vertical-align: top;
+}
+.eb-logs__table tbody tr:hover { background: #f5f9ff; }
+.eb-logs__date { white-space: nowrap; color: #666; font-size: 0.82rem; }
+.eb-logs__detail-btn {
+  padding: 0.3rem 0.7rem; background: #e3f2fd; color: #1565c0;
+  border: 1px solid #90caf9; border-radius: 4px;
+  cursor: pointer; font-size: 0.8rem;
+}
+.eb-logs__detail-btn:hover { background: #bbdefb; }
+.eb-logs__empty { text-align: center; color: #999; padding: 2rem !important; }
+.eb-logs__pagination {
+  display: -ms-flexbox; display: flex;
+  -ms-flex-align: center; align-items: center;
+  margin-top: 1.25rem;
+  font-size: 0.9rem; color: #555;
+}
+.eb-logs__pagination span { margin: 0 1rem; }
+.eb-logs__page-btn {
+  padding: 0.4rem 0.9rem; border: 1px solid #ccc;
+  border-radius: 5px; background: #fff;
+  cursor: pointer; font-size: 0.85rem;
+}
+.eb-logs__page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.eb-logs__page-btn:hover:not([disabled]) { background: #e3f2fd; border-color: #2196f3; }
+
+/* Log detail modal extras */
+.log-detail-table { width: 100%; font-size: 0.82rem; margin-top: 0.75rem; }
+.log-detail-table th { background: #f5f5f5; padding: 0.4rem 0.6rem; text-align: left; border: 1px solid #e0e0e0; }
+.log-detail-table td { padding: 0.4rem 0.6rem; border: 1px solid #e0e0e0; vertical-align: top; }
+.log-detail-pre {
+  margin: 0; font-size: 0.78rem; color: #444;
+  background: #f8f8f8; padding: 0.4rem 0.6rem;
+  border-radius: 4px; max-height: 200px;
+  overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+
+/* ═══ Print ══════════════════════════════════════════════════════════════ */
+@media print {
+  .inventory-header, .eb-list__controls, .no-print, .eb-modal-overlay { display: none !important; }
+  .app { display: block !important; }
+  .tab-panel { display: block !important; }
+  .eb-list { max-width: 100%; }
+  .eb-list__table th { background: #263238 !important; color: #fff !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h1>Edgeband Inventory</h1>
+    <p>Sign in to continue</p>
+    <div class="login-field">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═════════════════════════════════════════════════════════ -->
+<div id="mainApp" class="app">
+  <!-- Header -->
+  <div class="inventory-header">
+    <div class="inventory-header__container">
+      <div class="inventory-header__title">
+        <h1>Edgeband Inventory</h1>
+        <h2 id="headerSubtitle">Overview</h2>
+      </div>
+      <div class="inventory-header__nav">
+        <ul>
+          <li><button class="nav-btn active" id="navList" onclick="switchTab('list')">Edgeband Inventory</button></li>
+          <li id="navAddLi"><button class="nav-btn" id="navAdd" onclick="switchTab('add')">Add Edgeband</button></li>
+          <li id="navBulkLi" style="display:none"><button class="nav-btn" id="navBulk" onclick="switchTab('bulk')">Bulk Add</button></li>
+          <li id="navStockLi"><button class="nav-btn" id="navStock" onclick="switchTab('stock')">Add Edgeband Stock</button></li>
+          <li><button class="nav-btn" id="navLogs" onclick="switchTab('logs')">Edgeband Logs</button></li>
+        </ul>
+      </div>
+      <div class="user-info no-print" id="userInfo">
+        <span id="userGreeting"></span>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="inventory-home__content">
+
+    <!-- ── Tab: Inventory List ────────────────────────────────────────── -->
+    <div id="tabList" class="tab-panel active">
+      <div class="eb-list">
+        <div class="eb-list__controls">
+          <input type="text" class="eb-list__search" id="listSearch" placeholder="Search code, height, thickness..." oninput="filterInventory()">
+          <div class="eb-list__filters">
+            <div class="ms-wrap" id="msHeight">
+              <button type="button" class="ms-toggle" onclick="toggleMultiSelect('msHeight')">All Heights</button>
+              <div class="ms-dropdown" id="msHeightDrop"></div>
+            </div>
+            <div class="ms-wrap" id="msThickness">
+              <button type="button" class="ms-toggle" onclick="toggleMultiSelect('msThickness')">All Thicknesses</button>
+              <div class="ms-dropdown" id="msThicknessDrop"></div>
+            </div>
+          </div>
+          <button class="eb-list__print-btn" onclick="window.print()">Print</button>
+          <button class="eb-list__clear-btn" id="clearFiltersBtn" onclick="clearAllFilters()">Clear Filters</button>
+        </div>
+        <div id="listStatus" class="eb-list__status">Loading...</div>
+        <div class="eb-list__table-wrap" id="listTableWrap" style="display:none">
+          <table class="eb-list__table">
+            <thead>
+              <tr>
+                <th style="cursor:pointer" onclick="toggleSort()">Code <span id="sortArrow">&#9650;</span></th>
+                <th>Height</th>
+                <th>Thickness</th>
+                <th>Total Qty</th>
+                <th>Locations</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Add / Edit Edgeband ───────────────────────────────────── -->
+    <div id="tabAdd" class="tab-panel">
+      <div class="add-eb" id="addEbForm">
+        <h2 class="add-eb__title" id="addEbTitle">Add Edgeband</h2>
+        <div id="addEbNoPermission" class="add-eb__no-permission" style="display:none">You do not have permission to add edgebands.</div>
+        <div id="addEbFormFields">
+          <div class="add-eb__field">
+            <label for="addEbCode">Edgeband Code</label>
+            <input type="text" id="addEbCode" placeholder="Enter code">
+          </div>
+          <div class="add-eb__field">
+            <label for="addEbHeight">Height</label>
+            <select id="addEbHeight"><option value="">Select height...</option></select>
+          </div>
+          <div class="add-eb__field">
+            <label for="addEbThickness">Thickness</label>
+            <select id="addEbThickness"><option value="">Select thickness...</option></select>
+          </div>
+          <div id="addEbError" class="add-eb__error" style="display:none"></div>
+          <div id="addEbSuccess" class="add-eb__success" style="display:none"></div>
+          <div class="add-eb__actions">
+            <button class="add-eb__btn add-eb__btn--submit" id="addEbSubmit" onclick="submitAddEdgeband()">Add Edgeband</button>
+            <button class="add-eb__btn add-eb__btn--cancel" id="addEbCancel" onclick="cancelEdit()" style="display:none">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Bulk Add ──────────────────────────────────────────────── -->
+    <div id="tabBulk" class="tab-panel">
+      <div class="bulk-eb" id="bulkEbForm">
+        <h2 class="bulk-eb__title">Bulk Add Edgebands</h2>
+        <div id="bulkNoPermission" class="bulk-eb__no-permission" style="display:none">Only admins can use bulk add.</div>
+        <div id="bulkFormFields">
+          <div class="bulk-eb__row">
+            <div class="bulk-eb__field">
+              <label for="bulkHeight">Height</label>
+              <select id="bulkHeight"><option value="">Select height...</option></select>
+            </div>
+            <div class="bulk-eb__field">
+              <label for="bulkThickness">Thickness</label>
+              <select id="bulkThickness"><option value="">Select thickness...</option></select>
+            </div>
+          </div>
+          <div class="bulk-eb__field">
+            <label for="bulkCodes">Codes <span class="bulk-eb__label-hint">(comma-separated)</span></label>
+            <textarea class="bulk-eb__textarea" id="bulkCodes" placeholder="e.g. 101, 102, 103" oninput="updateBulkPreview()"></textarea>
+            <div class="bulk-eb__preview" id="bulkPreview"></div>
+          </div>
+          <div id="bulkError" class="bulk-eb__error" style="display:none"></div>
+          <div class="bulk-eb__actions">
+            <button class="bulk-eb__btn bulk-eb__btn--submit" id="bulkSubmit" onclick="submitBulkAdd()">Submit All</button>
+            <button class="bulk-eb__btn bulk-eb__btn--reset" id="bulkReset" onclick="resetBulk()" style="display:none">Reset</button>
+          </div>
+          <div id="bulkResults" class="bulk-eb__results" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Add Stock ─────────────────────────────────────────────── -->
+    <div id="tabStock" class="tab-panel">
+      <div class="add-eb-stock" id="addStockForm">
+        <h2 class="add-eb-stock__title">Add Edgeband Stock</h2>
+        <div id="stockNoPermission" class="add-eb-stock__no-permission" style="display:none">You do not have permission.</div>
+        <div id="stockFormFields">
+          <div class="add-eb-stock__field">
+            <label for="stockItem">Edgeband</label>
+            <select id="stockItem"><option value="">Select edgeband...</option></select>
+          </div>
+          <div class="add-eb-stock__field">
+            <label for="stockLocation">Location</label>
+            <input type="text" id="stockLocation" placeholder="Enter location name">
+          </div>
+          <div class="add-eb-stock__field">
+            <label for="stockQty">Quantity (rolls)</label>
+            <input type="number" id="stockQty" placeholder="0" min="1">
+          </div>
+          <div id="stockError" class="add-eb-stock__error" style="display:none"></div>
+          <div id="stockSuccess" class="add-eb-stock__success" style="display:none"></div>
+          <div class="add-eb-stock__actions">
+            <button class="add-eb-stock__btn add-eb-stock__btn--submit" onclick="submitAddStock()">Add Stock</button>
+            <button class="add-eb-stock__btn add-eb-stock__btn--cancel" onclick="switchTab('list')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Logs ──────────────────────────────────────────────────── -->
+    <div id="tabLogs" class="tab-panel">
+      <div class="eb-logs__controls">
+        <input type="text" class="eb-logs__search" id="logsSearch" placeholder="Search logs..." onkeydown="if(event.keyCode===13)searchLogs()">
+      </div>
+      <div class="eb-logs__header" id="logsHeader" style="display:none">
+        Showing <span class="eb-logs__count" id="logsCount">0</span> logs
+      </div>
+      <div id="logsStatus" class="eb-logs__status">Loading...</div>
+      <div class="eb-logs__table-wrap" id="logsTableWrap" style="display:none">
+        <table class="eb-logs__table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Logged At</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </div>
+      <div class="eb-logs__pagination" id="logsPagination" style="display:none">
+        <button class="eb-logs__page-btn" id="logsPrev" onclick="changePage(-1)">&#9664; Prev</button>
+        <span id="logsPageInfo">Page 1</span>
+        <button class="eb-logs__page-btn" id="logsNext" onclick="changePage(1)">Next &#9654;</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══════════════════════════════════════════════════════════ -->
+
+<!-- Add Rolls Modal -->
+<div class="eb-modal-overlay" id="modalAddRolls">
+  <div class="eb-modal">
+    <h3>Add Rolls</h3>
+    <p id="modalAddRollsInfo"></p>
+    <div class="eb-modal__field">
+      <label for="modalAddLoc">Location</label>
+      <input type="text" id="modalAddLoc" placeholder="Enter location">
+    </div>
+    <div class="eb-modal__field">
+      <label for="modalAddQty">Quantity</label>
+      <input type="number" id="modalAddQty" min="1" placeholder="0">
+    </div>
+    <div class="eb-modal__error" id="modalAddError" style="display:none"></div>
+    <div class="eb-modal__actions">
+      <button class="modal-btn modal-btn--confirm" onclick="confirmAddRolls()">Add</button>
+      <button class="modal-btn modal-btn--cancel" onclick="closeModal('modalAddRolls')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deduct Modal -->
+<div class="eb-modal-overlay" id="modalDeduct">
+  <div class="eb-modal">
+    <h3>Deduct Rolls</h3>
+    <p id="modalDeductInfo"></p>
+    <div class="eb-modal__field">
+      <label for="modalDeductLoc">Location</label>
+      <select id="modalDeductLoc"></select>
+    </div>
+    <div class="eb-modal__field">
+      <label for="modalDeductQty">Quantity to deduct</label>
+      <input type="number" id="modalDeductQty" min="1" placeholder="0">
+    </div>
+    <div class="eb-modal__error" id="modalDeductError" style="display:none"></div>
+    <div class="eb-modal__actions">
+      <button class="modal-btn modal-btn--confirm" onclick="confirmDeduct()">Deduct</button>
+      <button class="modal-btn modal-btn--cancel" onclick="closeModal('modalDeduct')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="eb-modal-overlay" id="modalDelete">
+  <div class="eb-modal">
+    <h3>Delete Edgeband</h3>
+    <p id="modalDeleteInfo">Are you sure you want to delete this edgeband?</p>
+    <div class="eb-modal__actions">
+      <button class="modal-btn modal-btn--delete" onclick="confirmDelete()">Delete</button>
+      <button class="modal-btn modal-btn--cancel" onclick="closeModal('modalDelete')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="eb-modal-overlay" id="modalLogDetail">
+  <div class="eb-modal" style="max-width:560px">
+    <h3>Log Details</h3>
+    <div id="logDetailContent"></div>
+    <div class="eb-modal__actions" style="margin-top:1rem">
+      <button class="modal-btn modal-btn--cancel" onclick="closeModal('modalLogDetail')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   IE11-compatible Edgeband Inventory App
+   All code is ES5 — no let/const, no arrows, no template literals,
+   no fetch, no Promise, no for-of, no includes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+// ── State ──────────────────────────────────────────────────────────────
+var state = {
+  user: null,        // { token, userId, username, role }
+  items: [],         // all edgeband inventory items
+  heights: [],       // edgeband height options
+  thicknesses: [],   // edgeband thickness options
+  sortAsc: true,
+  editingId: null,   // id of item being edited (null = add mode)
+  modalItemId: null,  // id for modal operations
+  logsPage: 1,
+  logsTotalPages: 1,
+  logsSearchTerm: ''
+};
+
+var EDITABLE_ROLES = ['Editor', 'Manager', 'admin', 'Edgebander'];
+
+// ── Helpers ────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+
+function hasRole(roles) {
+  if (!state.user) return false;
+  for (var i = 0; i < roles.length; i++) {
+    if (roles[i] === state.user.role) return true;
+  }
+  return false;
+}
+
+function escHtml(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+// ── XHR Wrapper ────────────────────────────────────────────────────────
+function xhr(method, url, data, callback) {
+  var req = new XMLHttpRequest();
+  req.open(method, url, true);
+  req.setRequestHeader('Content-Type', 'application/json');
+  if (state.user && state.user.token) {
+    req.setRequestHeader('Authorization', 'Bearer ' + state.user.token);
+  }
+  req.onreadystatechange = function() {
+    if (req.readyState === 4) {
+      var resp;
+      try { resp = JSON.parse(req.responseText); } catch(e) { resp = null; }
+      callback(req.status, resp);
+    }
+  };
+  req.send(data ? JSON.stringify(data) : null);
+}
+
+// ── Modal Helpers ──────────────────────────────────────────────────────
+function openModal(id) {
+  $(id).className = 'eb-modal-overlay visible';
+}
+function closeModal(id) {
+  $(id).className = 'eb-modal-overlay';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════
+function doLogin() {
+  var username = $('loginUser').value.trim();
+  var password = $('loginPass').value;
+  if (!username || !password) {
+    $('loginError').innerHTML = 'Please enter username and password.';
+    $('loginError').style.display = 'block';
+    return;
+  }
+  $('loginBtn').disabled = true;
+  xhr('POST', '/users/login', { username: username, password: password }, function(status, resp) {
+    $('loginBtn').disabled = false;
+    if (status === 200 && resp && resp.success) {
+      state.user = resp.user;
+      try { localStorage.setItem('ebUser', JSON.stringify(resp.user)); } catch(e) {}
+      showApp();
+    } else {
+      var msg = (resp && resp.message) ? resp.message : 'Login failed.';
+      $('loginError').innerHTML = escHtml(msg);
+      $('loginError').style.display = 'block';
+    }
+  });
+}
+
+function doLogout() {
+  state.user = null;
+  try { localStorage.removeItem('ebUser'); } catch(e) {}
+  $('mainApp').style.display = 'none';
+  $('loginScreen').style.display = '';
+  $('loginUser').value = '';
+  $('loginPass').value = '';
+  $('loginError').style.display = 'none';
+}
+
+function checkSavedLogin() {
+  try {
+    var saved = localStorage.getItem('ebUser');
+    if (saved) {
+      state.user = JSON.parse(saved);
+      showApp();
+      return;
+    }
+  } catch(e) {}
+}
+
+// Enter on password field
+if ($('loginPass')) {
+  $('loginPass').onkeydown = function(e) {
+    if ((e.keyCode || e.which) === 13) doLogin();
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════════════════════════════════════
+function showApp() {
+  $('loginScreen').style.display = 'none';
+  $('mainApp').style.display = 'block';
+  $('userGreeting').innerHTML = 'Hello, <strong>' + escHtml(state.user.username) + '</strong> (' + escHtml(state.user.role) + ')';
+
+  // Show/hide tabs by role
+  if (hasRole(EDITABLE_ROLES)) {
+    $('navAddLi').style.display = '';
+    $('navStockLi').style.display = '';
+  } else {
+    $('navAddLi').style.display = 'none';
+    $('navStockLi').style.display = 'none';
+  }
+  if (state.user.role === 'admin') {
+    $('navBulkLi').style.display = '';
+  } else {
+    $('navBulkLi').style.display = 'none';
+  }
+
+  loadHeightsAndThicknesses();
+  switchTab('list');
+}
+
+function loadHeightsAndThicknesses() {
+  xhr('GET', '/edgeBandHeight', null, function(status, resp) {
+    if (status === 200 && resp) {
+      state.heights = resp;
+      populateHeightDropdowns();
+    }
+  });
+  xhr('GET', '/edgeBandThickness', null, function(status, resp) {
+    if (status === 200 && resp) {
+      state.thicknesses = resp;
+      populateThicknessDropdowns();
+    }
+  });
+}
+
+function populateHeightDropdowns() {
+  // Regular <select> dropdowns
+  var ids = ['addEbHeight', 'bulkHeight'];
+  for (var d = 0; d < ids.length; d++) {
+    var sel = $(ids[d]);
+    if (!sel) continue;
+    var firstOpt = sel.options[0].text;
+    sel.innerHTML = '';
+    var opt = document.createElement('option');
+    opt.value = '';
+    opt.text = firstOpt;
+    sel.appendChild(opt);
+    for (var i = 0; i < state.heights.length; i++) {
+      var o = document.createElement('option');
+      o.value = state.heights[i].name;
+      o.text = state.heights[i].name;
+      sel.appendChild(o);
+    }
+  }
+  // Multi-select filter
+  buildMultiSelect('msHeight', 'msHeightDrop', state.heights, 'All Heights');
+}
+
+function populateThicknessDropdowns() {
+  var ids = ['addEbThickness', 'bulkThickness'];
+  for (var d = 0; d < ids.length; d++) {
+    var sel = $(ids[d]);
+    if (!sel) continue;
+    var firstOpt = sel.options[0].text;
+    sel.innerHTML = '';
+    var opt = document.createElement('option');
+    opt.value = '';
+    opt.text = firstOpt;
+    sel.appendChild(opt);
+    for (var i = 0; i < state.thicknesses.length; i++) {
+      var o = document.createElement('option');
+      o.value = state.thicknesses[i].name;
+      o.text = state.thicknesses[i].name;
+      sel.appendChild(o);
+    }
+  }
+  buildMultiSelect('msThickness', 'msThicknessDrop', state.thicknesses, 'All Thicknesses');
+}
+
+// ── Multi-Select Dropdown ──────────────────────────────────────────────
+state.msSelections = { msHeight: [], msThickness: [] };
+
+function buildMultiSelect(wrapId, dropId, items, allLabel) {
+  var drop = $(dropId);
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var name = items[i].name;
+    var cbId = wrapId + '_cb_' + i;
+    html += '<div class="ms-option">' +
+      '<input type="checkbox" id="' + cbId + '" value="' + escHtml(name) + '" onchange="onMultiSelectChange(\'' + wrapId + '\', \'' + escHtml(allLabel) + '\')">' +
+      '<label for="' + cbId + '">' + escHtml(name) + '</label>' +
+      '</div>';
+  }
+  drop.innerHTML = html;
+  state.msSelections[wrapId] = [];
+  updateMultiSelectLabel(wrapId, allLabel);
+}
+
+function toggleMultiSelect(wrapId) {
+  var wrap = $(wrapId);
+  var toggle = wrap.getElementsByClassName('ms-toggle')[0];
+  var drop = wrap.getElementsByClassName('ms-dropdown')[0];
+  var isOpen = drop.className.indexOf('ms-open') !== -1;
+  // Close all others first
+  closeAllMultiSelects();
+  if (!isOpen) {
+    toggle.className = 'ms-toggle ms-open';
+    drop.className = 'ms-dropdown ms-open';
+  }
+}
+
+function closeAllMultiSelects() {
+  var wraps = document.getElementsByClassName('ms-wrap');
+  for (var i = 0; i < wraps.length; i++) {
+    var t = wraps[i].getElementsByClassName('ms-toggle')[0];
+    var d = wraps[i].getElementsByClassName('ms-dropdown')[0];
+    if (t) t.className = 'ms-toggle';
+    if (d) d.className = 'ms-dropdown';
+  }
+}
+
+function onMultiSelectChange(wrapId, allLabel) {
+  var drop = $(wrapId).getElementsByClassName('ms-dropdown')[0];
+  var checkboxes = drop.getElementsByTagName('input');
+  var selected = [];
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      selected.push(checkboxes[i].value);
+    }
+  }
+  state.msSelections[wrapId] = selected;
+  updateMultiSelectLabel(wrapId, allLabel);
+  filterInventory();
+}
+
+function updateMultiSelectLabel(wrapId, allLabel) {
+  var toggle = $(wrapId).getElementsByClassName('ms-toggle')[0];
+  var sel = state.msSelections[wrapId];
+  if (!sel || sel.length === 0) {
+    toggle.innerHTML = allLabel;
+  } else if (sel.length === 1) {
+    toggle.innerHTML = escHtml(sel[0]);
+  } else {
+    toggle.innerHTML = sel.length + ' selected';
+  }
+  // Re-add the arrow pseudo-element (innerHTML clears it but CSS :after handles it)
+}
+
+// Close multi-selects when clicking outside
+document.onclick = function(e) {
+  var target = e.target || e.srcElement;
+  var inMs = false;
+  var node = target;
+  while (node) {
+    if (node.className && typeof node.className === 'string' && node.className.indexOf('ms-wrap') !== -1) {
+      inMs = true;
+      break;
+    }
+    node = node.parentNode;
+  }
+  if (!inMs) {
+    closeAllMultiSelects();
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  var tabs = ['list', 'add', 'bulk', 'stock', 'logs'];
+  var titles = { list: 'Overview', add: 'Add Edgeband', bulk: 'Bulk Add', stock: 'Add Stock', logs: 'Logs' };
+  for (var i = 0; i < tabs.length; i++) {
+    var panel = $('tab' + tabs[i].charAt(0).toUpperCase() + tabs[i].slice(1));
+    var btn = $('nav' + tabs[i].charAt(0).toUpperCase() + tabs[i].slice(1));
+    if (tabs[i] === tab) {
+      panel.className = 'tab-panel active';
+      if (btn) btn.className = 'nav-btn active';
+    } else {
+      panel.className = 'tab-panel';
+      if (btn) btn.className = 'nav-btn';
+    }
+  }
+  $('headerSubtitle').innerHTML = titles[tab] || '';
+
+  // Load data for tab
+  if (tab === 'list') {
+    loadInventory();
+  } else if (tab === 'add') {
+    checkAddPermission();
+    if (!state.editingId) {
+      $('addEbTitle').innerHTML = 'Add Edgeband';
+      $('addEbSubmit').innerHTML = 'Add Edgeband';
+      $('addEbCancel').style.display = 'none';
+      $('addEbCode').value = '';
+      $('addEbHeight').value = '';
+      $('addEbThickness').value = '';
+      $('addEbError').style.display = 'none';
+      $('addEbSuccess').style.display = 'none';
+    }
+  } else if (tab === 'bulk') {
+    checkBulkPermission();
+  } else if (tab === 'stock') {
+    checkStockPermission();
+    populateStockDropdown();
+  } else if (tab === 'logs') {
+    state.logsPage = 1;
+    state.logsSearchTerm = '';
+    $('logsSearch').value = '';
+    loadLogs();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// INVENTORY LIST
+// ═══════════════════════════════════════════════════════════════════════
+function loadInventory() {
+  $('listStatus').innerHTML = 'Loading...';
+  $('listStatus').style.display = 'block';
+  $('listTableWrap').style.display = 'none';
+
+  xhr('GET', '/edgeBandInventory', null, function(status, resp) {
+    if (status === 200 && resp) {
+      state.items = resp;
+      filterInventory();
+    } else {
+      $('listStatus').innerHTML = 'Failed to load inventory.';
+      $('listStatus').className = 'eb-list__status eb-list__status--error';
+    }
+  });
+}
+
+function updateClearButton() {
+  var search = $('listSearch').value.trim();
+  var hSelected = state.msSelections.msHeight || [];
+  var tSelected = state.msSelections.msThickness || [];
+  var btn = $('clearFiltersBtn');
+  if (search || hSelected.length > 0 || tSelected.length > 0) {
+    btn.className = 'eb-list__clear-btn visible';
+  } else {
+    btn.className = 'eb-list__clear-btn';
+  }
+}
+
+function clearAllFilters() {
+  // Clear search
+  $('listSearch').value = '';
+  // Clear multi-selects
+  state.msSelections.msHeight = [];
+  state.msSelections.msThickness = [];
+  // Uncheck all checkboxes
+  var wraps = ['msHeight', 'msThickness'];
+  var labels = ['All Heights', 'All Thicknesses'];
+  for (var w = 0; w < wraps.length; w++) {
+    var drop = $(wraps[w]).getElementsByClassName('ms-dropdown')[0];
+    if (drop) {
+      var cbs = drop.getElementsByTagName('input');
+      for (var i = 0; i < cbs.length; i++) { cbs[i].checked = false; }
+    }
+    updateMultiSelectLabel(wraps[w], labels[w]);
+  }
+  updateClearButton();
+  filterInventory();
+}
+
+function filterInventory() {
+  var search = $('listSearch').value.trim().toLowerCase();
+  var hSelected = state.msSelections.msHeight || [];
+  var tSelected = state.msSelections.msThickness || [];
+  updateClearButton();
+
+  var filtered = [];
+  for (var i = 0; i < state.items.length; i++) {
+    var item = state.items[i];
+    // Height filter (multi)
+    if (hSelected.length > 0) {
+      var hMatch = false;
+      for (var h = 0; h < hSelected.length; h++) {
+        if (hSelected[h] === item.height) { hMatch = true; break; }
+      }
+      if (!hMatch) continue;
+    }
+    // Thickness filter (multi)
+    if (tSelected.length > 0) {
+      var tMatch = false;
+      for (var t = 0; t < tSelected.length; t++) {
+        if (tSelected[t] === item.thickness) { tMatch = true; break; }
+      }
+      if (!tMatch) continue;
+    }
+    // Search
+    if (search) {
+      var haystack = (
+        (item.code || '') + ' ' +
+        (item.height || '') + ' ' +
+        (item.thickness || '') + ' ' +
+        (item.uniqueCode || '')
+      ).toLowerCase();
+      if (haystack.indexOf(search) === -1) continue;
+    }
+    filtered.push(item);
+  }
+
+  // Sort by code (numeric if possible, fallback to string)
+  filtered.sort(function(a, b) {
+    var ca = parseFloat(a.code);
+    var cb = parseFloat(b.code);
+    var aNum = !isNaN(ca);
+    var bNum = !isNaN(cb);
+    var result;
+    if (aNum && bNum) {
+      result = ca - cb;
+    } else if (aNum) {
+      result = -1;
+    } else if (bNum) {
+      result = 1;
+    } else {
+      result = (a.code || '').localeCompare(b.code || '');
+    }
+    return state.sortAsc ? result : -result;
+  });
+
+  renderInventory(filtered, search);
+}
+
+function toggleSort() {
+  state.sortAsc = !state.sortAsc;
+  $('sortArrow').innerHTML = state.sortAsc ? '&#9650;' : '&#9660;';
+  filterInventory();
+}
+
+function renderInventory(items, search) {
+  var tbody = $('listBody');
+  if (items.length === 0) {
+    $('listStatus').innerHTML = 'No edgebands found.';
+    $('listStatus').className = 'eb-list__status';
+    $('listStatus').style.display = 'block';
+    $('listTableWrap').style.display = 'none';
+    return;
+  }
+
+  $('listStatus').style.display = 'none';
+  $('listTableWrap').style.display = '';
+
+  var canEdit = hasRole(['admin', 'Editor']);
+  var canAction = hasRole(EDITABLE_ROLES);
+  var html = '';
+
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    var code = escHtml(it.code || '');
+    var height = escHtml(it.height || '');
+    var thick = escHtml(it.thickness || '');
+
+    // Highlight search
+    if (search) {
+      code = highlightText(code, search);
+      height = highlightText(height, search);
+      thick = highlightText(thick, search);
+    }
+
+    // Locations display
+    var locHtml = '';
+    var locs = it.locations || [];
+    if (locs.length === 0) {
+      locHtml = '<span class="eb-list__loc-empty">-</span>';
+    } else {
+      for (var j = 0; j < Math.min(2, locs.length); j++) {
+        locHtml += '<span class="eb-list__loc-tag">' + escHtml(locs[j].position) + ': ' + locs[j].qty + '</span> ';
+      }
+      if (locs.length > 2) {
+        var tooltip = '';
+        for (var k = 0; k < locs.length; k++) {
+          tooltip += escHtml(locs[k].position) + ': ' + locs[k].qty + '&#10;';
+        }
+        locHtml += '<span class="eb-list__loc-more" title="' + tooltip + '">+' + (locs.length - 2) + ' more</span>';
+      }
+    }
+
+    // Actions
+    var actHtml = '';
+    if (canAction) {
+      var hasStock = it.totalQty > 0;
+      actHtml = '<td class="eb-list__actions no-print"><div class="eb-list__actions-grid">' +
+        '<button class="eb-list__btn eb-list__btn--add" onclick="openAddRolls(\'' + it._id + '\')">Add</button>' +
+        '<button class="eb-list__btn eb-list__btn--deduct"' + (hasStock ? '' : ' disabled') + ' onclick="openDeduct(\'' + it._id + '\')">Deduct</button>' +
+        (canEdit ? '<button class="eb-list__btn eb-list__btn--edit" onclick="startEdit(\'' + it._id + '\')">Edit</button>' : '<span></span>') +
+        (canEdit ? '<button class="eb-list__btn eb-list__btn--delete" onclick="openDeleteModal(\'' + it._id + '\')">Delete</button>' : '<span></span>') +
+        '</div></td>';
+    } else {
+      actHtml = '<td class="eb-list__actions no-print"></td>';
+    }
+
+    html += '<tr>' +
+      '<td>' + code + '</td>' +
+      '<td>' + height + '</td>' +
+      '<td>' + thick + '</td>' +
+      '<td class="eb-list__qty">' + (it.totalQty || 0) + '</td>' +
+      '<td>' + locHtml + '</td>' +
+      actHtml +
+      '</tr>';
+  }
+
+  tbody.innerHTML = html;
+}
+
+function highlightText(text, search) {
+  if (!search) return text;
+  var lower = text.toLowerCase();
+  var idx = lower.indexOf(search.toLowerCase());
+  if (idx === -1) return text;
+  return text.substring(0, idx) +
+    '<mark>' + text.substring(idx, idx + search.length) + '</mark>' +
+    text.substring(idx + search.length);
+}
+
+// ── Add Rolls Modal ────────────────────────────────────────────────────
+function openAddRolls(id) {
+  state.modalItemId = id;
+  var item = findItem(id);
+  if (!item) return;
+  $('modalAddRollsInfo').innerHTML = 'Adding rolls to: <strong>' + escHtml(item.code) + '</strong> (' + escHtml(item.height) + ' / ' + escHtml(item.thickness) + ')';
+  $('modalAddLoc').value = '';
+  $('modalAddQty').value = '';
+  $('modalAddError').style.display = 'none';
+  openModal('modalAddRolls');
+}
+
+function confirmAddRolls() {
+  var loc = $('modalAddLoc').value.trim();
+  var qty = parseInt($('modalAddQty').value, 10);
+  if (!loc || !qty || qty < 1) {
+    $('modalAddError').innerHTML = 'Please enter a valid location and quantity.';
+    $('modalAddError').style.display = 'block';
+    return;
+  }
+  var data = {
+    locations: [{ position: loc, qty: qty }],
+    user: state.user.username
+  };
+  xhr('PUT', '/edgeBandInventory/add-stock/' + state.modalItemId, data, function(status, resp) {
+    if (status === 200) {
+      closeModal('modalAddRolls');
+      loadInventory();
+    } else {
+      var msg = (resp && resp.message) ? resp.message : 'Failed to add stock.';
+      $('modalAddError').innerHTML = escHtml(msg);
+      $('modalAddError').style.display = 'block';
+    }
+  });
+}
+
+// ── Deduct Modal ───────────────────────────────────────────────────────
+function openDeduct(id) {
+  state.modalItemId = id;
+  var item = findItem(id);
+  if (!item) return;
+  $('modalDeductInfo').innerHTML = 'Deducting from: <strong>' + escHtml(item.code) + '</strong> (' + escHtml(item.height) + ' / ' + escHtml(item.thickness) + ')';
+
+  // Populate locations dropdown
+  var sel = $('modalDeductLoc');
+  sel.innerHTML = '';
+  var locs = item.locations || [];
+  for (var i = 0; i < locs.length; i++) {
+    var o = document.createElement('option');
+    o.value = locs[i].position;
+    o.text = locs[i].position + ' (qty: ' + locs[i].qty + ')';
+    sel.appendChild(o);
+  }
+  $('modalDeductQty').value = '';
+  $('modalDeductError').style.display = 'none';
+  openModal('modalDeduct');
+}
+
+function confirmDeduct() {
+  var loc = $('modalDeductLoc').value;
+  var qty = parseInt($('modalDeductQty').value, 10);
+  if (!loc || !qty || qty < 1) {
+    $('modalDeductError').innerHTML = 'Please select a location and enter a valid quantity.';
+    $('modalDeductError').style.display = 'block';
+    return;
+  }
+  var data = {
+    location: loc,
+    qtyUsed: qty,
+    user: state.user.username
+  };
+  xhr('POST', '/edgeBandInventory/' + state.modalItemId + '/use', data, function(status, resp) {
+    if (status === 200) {
+      closeModal('modalDeduct');
+      loadInventory();
+    } else {
+      var msg = (resp && resp.message) ? resp.message : 'Failed to deduct.';
+      $('modalDeductError').innerHTML = escHtml(msg);
+      $('modalDeductError').style.display = 'block';
+    }
+  });
+}
+
+// ── Delete Modal ───────────────────────────────────────────────────────
+function openDeleteModal(id) {
+  state.modalItemId = id;
+  var item = findItem(id);
+  if (!item) return;
+  $('modalDeleteInfo').innerHTML = 'Are you sure you want to delete <strong>' + escHtml(item.code) + '</strong> (' + escHtml(item.height) + ' / ' + escHtml(item.thickness) + ')?';
+  openModal('modalDelete');
+}
+
+function confirmDelete() {
+  xhr('DELETE', '/edgeBandInventory/' + state.modalItemId, { user: state.user.username }, function(status) {
+    closeModal('modalDelete');
+    if (status === 200) {
+      loadInventory();
+    } else {
+      alert('Failed to delete edgeband.');
+    }
+  });
+}
+
+function findItem(id) {
+  for (var i = 0; i < state.items.length; i++) {
+    if (state.items[i]._id === id) return state.items[i];
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ADD / EDIT EDGEBAND
+// ═══════════════════════════════════════════════════════════════════════
+function checkAddPermission() {
+  if (hasRole(EDITABLE_ROLES)) {
+    $('addEbFormFields').style.display = '';
+    $('addEbNoPermission').style.display = 'none';
+  } else {
+    $('addEbFormFields').style.display = 'none';
+    $('addEbNoPermission').style.display = '';
+  }
+}
+
+function startEdit(id) {
+  var item = findItem(id);
+  if (!item) return;
+  state.editingId = id;
+  $('addEbTitle').innerHTML = 'Edit Edgeband';
+  $('addEbSubmit').innerHTML = 'Update Edgeband';
+  $('addEbCancel').style.display = '';
+  $('addEbCode').value = item.code || '';
+  $('addEbHeight').value = item.height || '';
+  $('addEbThickness').value = item.thickness || '';
+  $('addEbError').style.display = 'none';
+  $('addEbSuccess').style.display = 'none';
+  switchTab('add');
+}
+
+function cancelEdit() {
+  state.editingId = null;
+  $('addEbTitle').innerHTML = 'Add Edgeband';
+  $('addEbSubmit').innerHTML = 'Add Edgeband';
+  $('addEbCancel').style.display = 'none';
+  $('addEbCode').value = '';
+  $('addEbHeight').value = '';
+  $('addEbThickness').value = '';
+  $('addEbError').style.display = 'none';
+  $('addEbSuccess').style.display = 'none';
+  switchTab('list');
+}
+
+function submitAddEdgeband() {
+  var code = $('addEbCode').value.trim();
+  var height = $('addEbHeight').value;
+  var thickness = $('addEbThickness').value;
+
+  if (!code || !height || !thickness) {
+    $('addEbError').innerHTML = 'All fields are required.';
+    $('addEbError').style.display = 'block';
+    $('addEbSuccess').style.display = 'none';
+    return;
+  }
+
+  var data = { code: code, height: height, thickness: thickness, user: state.user.username };
+  $('addEbSubmit').disabled = true;
+
+  if (state.editingId) {
+    // Update
+    xhr('PUT', '/edgeBandInventory/' + state.editingId, data, function(status, resp) {
+      $('addEbSubmit').disabled = false;
+      if (status === 200) {
+        $('addEbSuccess').innerHTML = 'Edgeband updated successfully!';
+        $('addEbSuccess').style.display = 'block';
+        $('addEbError').style.display = 'none';
+        state.editingId = null;
+        setTimeout(function() { switchTab('list'); }, 1000);
+      } else {
+        var msg = (resp && resp.message) ? resp.message : 'Failed to update.';
+        $('addEbError').innerHTML = escHtml(msg);
+        $('addEbError').style.display = 'block';
+        $('addEbSuccess').style.display = 'none';
+      }
+    });
+  } else {
+    // Add new
+    xhr('POST', '/edgeBandInventory/add', data, function(status, resp) {
+      $('addEbSubmit').disabled = false;
+      if (status === 201 || status === 200) {
+        $('addEbSuccess').innerHTML = 'Edgeband added successfully!';
+        $('addEbSuccess').style.display = 'block';
+        $('addEbError').style.display = 'none';
+        $('addEbCode').value = '';
+        $('addEbHeight').value = '';
+        $('addEbThickness').value = '';
+      } else {
+        var msg = (resp && resp.message) ? resp.message : 'Failed to add.';
+        $('addEbError').innerHTML = escHtml(msg);
+        $('addEbError').style.display = 'block';
+        $('addEbSuccess').style.display = 'none';
+      }
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BULK ADD
+// ═══════════════════════════════════════════════════════════════════════
+function checkBulkPermission() {
+  if (state.user.role === 'admin') {
+    $('bulkFormFields').style.display = '';
+    $('bulkNoPermission').style.display = 'none';
+  } else {
+    $('bulkFormFields').style.display = 'none';
+    $('bulkNoPermission').style.display = '';
+  }
+}
+
+function updateBulkPreview() {
+  var raw = $('bulkCodes').value;
+  var codes = parseBulkCodes(raw);
+  var html = '';
+  for (var i = 0; i < codes.length; i++) {
+    html += '<span class="bulk-eb__tag">' + escHtml(codes[i]) + '</span>';
+  }
+  $('bulkPreview').innerHTML = html;
+}
+
+function parseBulkCodes(raw) {
+  var parts = raw.split(',');
+  var codes = [];
+  for (var i = 0; i < parts.length; i++) {
+    var c = parts[i].replace(/\s+/g, '').trim();
+    if (c) codes.push(c);
+  }
+  return codes;
+}
+
+function submitBulkAdd() {
+  var height = $('bulkHeight').value;
+  var thickness = $('bulkThickness').value;
+  var codes = parseBulkCodes($('bulkCodes').value);
+
+  if (!height || !thickness || codes.length === 0) {
+    $('bulkError').innerHTML = 'Please select height, thickness, and enter at least one code.';
+    $('bulkError').style.display = 'block';
+    return;
+  }
+  $('bulkError').style.display = 'none';
+  $('bulkSubmit').disabled = true;
+
+  var results = [];
+  var completed = 0;
+
+  for (var i = 0; i < codes.length; i++) {
+    (function(code, index) {
+      var data = { code: code, height: height, thickness: thickness, user: state.user.username };
+      xhr('POST', '/edgeBandInventory/add', data, function(status, resp) {
+        var result = { code: code, status: 'error', message: 'Failed' };
+        if (status === 201 || status === 200) {
+          result.status = 'success';
+          result.message = 'Added';
+        } else if (resp && resp.message && resp.message.toLowerCase().indexOf('exist') !== -1) {
+          result.status = 'duplicate';
+          result.message = 'Already exists';
+        } else {
+          result.message = (resp && resp.message) ? resp.message : 'Failed';
+        }
+        results[index] = result;
+        completed++;
+
+        if (completed === codes.length) {
+          $('bulkSubmit').disabled = false;
+          $('bulkReset').style.display = '';
+          renderBulkResults(results);
+        }
+      });
+    })(codes[i], i);
+  }
+}
+
+function renderBulkResults(results) {
+  var successCount = 0, dupeCount = 0, errorCount = 0;
+  for (var i = 0; i < results.length; i++) {
+    if (results[i].status === 'success') successCount++;
+    else if (results[i].status === 'duplicate') dupeCount++;
+    else errorCount++;
+  }
+
+  var html = '<div class="bulk-eb__results-summary">';
+  if (successCount > 0) html += '<span class="bulk-eb__summary-badge bulk-eb__summary-badge--success">' + successCount + ' Added</span>';
+  if (dupeCount > 0) html += '<span class="bulk-eb__summary-badge bulk-eb__summary-badge--dupe">' + dupeCount + ' Already exist</span>';
+  if (errorCount > 0) html += '<span class="bulk-eb__summary-badge bulk-eb__summary-badge--error">' + errorCount + ' Failed</span>';
+  html += '</div>';
+
+  html += '<table class="bulk-eb__table"><thead><tr><th>Code</th><th>Status</th></tr></thead><tbody>';
+  for (var j = 0; j < results.length; j++) {
+    var rowClass = 'bulk-eb__row--' + (results[j].status === 'duplicate' ? 'duplicate' : results[j].status);
+    html += '<tr class="' + rowClass + '"><td>' + escHtml(results[j].code) + '</td><td>' + escHtml(results[j].message) + '</td></tr>';
+  }
+  html += '</tbody></table>';
+
+  $('bulkResults').innerHTML = html;
+  $('bulkResults').style.display = '';
+}
+
+function resetBulk() {
+  $('bulkHeight').value = '';
+  $('bulkThickness').value = '';
+  $('bulkCodes').value = '';
+  $('bulkPreview').innerHTML = '';
+  $('bulkResults').style.display = 'none';
+  $('bulkResults').innerHTML = '';
+  $('bulkReset').style.display = 'none';
+  $('bulkError').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ADD STOCK
+// ═══════════════════════════════════════════════════════════════════════
+function checkStockPermission() {
+  if (hasRole(EDITABLE_ROLES)) {
+    $('stockFormFields').style.display = '';
+    $('stockNoPermission').style.display = 'none';
+  } else {
+    $('stockFormFields').style.display = 'none';
+    $('stockNoPermission').style.display = '';
+  }
+}
+
+function populateStockDropdown() {
+  xhr('GET', '/edgeBandInventory', null, function(status, resp) {
+    if (status === 200 && resp) {
+      var sel = $('stockItem');
+      sel.innerHTML = '<option value="">Select edgeband...</option>';
+      for (var i = 0; i < resp.length; i++) {
+        var o = document.createElement('option');
+        o.value = resp[i]._id;
+        o.text = resp[i].code + ' (' + resp[i].height + ' / ' + resp[i].thickness + ')';
+        sel.appendChild(o);
+      }
+    }
+  });
+}
+
+function submitAddStock() {
+  var itemId = $('stockItem').value;
+  var loc = $('stockLocation').value.trim();
+  var qty = parseInt($('stockQty').value, 10);
+
+  if (!itemId || !loc || !qty || qty < 1) {
+    $('stockError').innerHTML = 'All fields are required.';
+    $('stockError').style.display = 'block';
+    $('stockSuccess').style.display = 'none';
+    return;
+  }
+
+  var data = {
+    locations: [{ position: loc, qty: qty }],
+    user: state.user.username
+  };
+
+  xhr('PUT', '/edgeBandInventory/add-stock/' + itemId, data, function(status, resp) {
+    if (status === 200) {
+      $('stockSuccess').innerHTML = 'Stock added successfully!';
+      $('stockSuccess').style.display = 'block';
+      $('stockError').style.display = 'none';
+      $('stockItem').value = '';
+      $('stockLocation').value = '';
+      $('stockQty').value = '';
+    } else {
+      var msg = (resp && resp.message) ? resp.message : 'Failed to add stock.';
+      $('stockError').innerHTML = escHtml(msg);
+      $('stockError').style.display = 'block';
+      $('stockSuccess').style.display = 'none';
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LOGS
+// ═══════════════════════════════════════════════════════════════════════
+function loadLogs() {
+  $('logsStatus').innerHTML = 'Loading...';
+  $('logsStatus').style.display = 'block';
+  $('logsTableWrap').style.display = 'none';
+  $('logsPagination').style.display = 'none';
+  $('logsHeader').style.display = 'none';
+
+  var url = '/edgeBandLog?page=' + state.logsPage + '&limit=50';
+  xhr('GET', url, null, function(status, resp) {
+    if (status === 200 && resp) {
+      var logs = resp.logs || resp;
+      var total = resp.total || logs.length;
+      var totalPages = resp.totalPages || Math.ceil(total / 50) || 1;
+      state.logsTotalPages = totalPages;
+
+      renderLogs(logs, total);
+    } else {
+      $('logsStatus').innerHTML = 'Failed to load logs.';
+      $('logsStatus').className = 'eb-logs__status eb-logs__status--error';
+    }
+  });
+}
+
+function searchLogs() {
+  var term = $('logsSearch').value.trim();
+  if (!term) {
+    state.logsSearchTerm = '';
+    state.logsPage = 1;
+    loadLogs();
+    return;
+  }
+  state.logsSearchTerm = term;
+
+  $('logsStatus').innerHTML = 'Searching...';
+  $('logsStatus').style.display = 'block';
+  $('logsTableWrap').style.display = 'none';
+  $('logsPagination').style.display = 'none';
+
+  xhr('GET', '/edgeBandLog/search?term=' + encodeURIComponent(term), null, function(status, resp) {
+    if (status === 200 && resp) {
+      renderLogs(resp, resp.length);
+      $('logsPagination').style.display = 'none';
+    } else {
+      $('logsStatus').innerHTML = 'Search failed.';
+      $('logsStatus').className = 'eb-logs__status eb-logs__status--error';
+    }
+  });
+}
+
+function renderLogs(logs, total) {
+  if (!logs || logs.length === 0) {
+    $('logsStatus').innerHTML = 'No logs found.';
+    $('logsStatus').className = 'eb-logs__status';
+    $('logsStatus').style.display = 'block';
+    $('logsTableWrap').style.display = 'none';
+    $('logsPagination').style.display = 'none';
+    $('logsHeader').style.display = 'none';
+    return;
+  }
+
+  $('logsStatus').style.display = 'none';
+  $('logsTableWrap').style.display = '';
+  $('logsCount').innerHTML = total;
+  $('logsHeader').style.display = '';
+
+  var html = '';
+  for (var i = 0; i < logs.length; i++) {
+    var log = logs[i];
+    var dateStr = log.loggedAt ? new Date(log.loggedAt).toLocaleString() : '-';
+    html += '<tr>' +
+      '<td>' + escHtml(log.user || '-') + '</td>' +
+      '<td>' + escHtml(log.action || '-') + '</td>' +
+      '<td class="eb-logs__date">' + escHtml(dateStr) + '</td>' +
+      '<td><button class="eb-logs__detail-btn" onclick="showLogDetail(' + i + ')">Details</button></td>' +
+      '</tr>';
+  }
+  $('logsBody').innerHTML = html;
+
+  // Store logs for detail view
+  state.currentLogs = logs;
+
+  // Pagination
+  if (!state.logsSearchTerm) {
+    $('logsPagination').style.display = '';
+    $('logsPageInfo').innerHTML = 'Page ' + state.logsPage + ' of ' + state.logsTotalPages;
+    $('logsPrev').disabled = state.logsPage <= 1;
+    $('logsNext').disabled = state.logsPage >= state.logsTotalPages;
+  }
+}
+
+function changePage(dir) {
+  state.logsPage += dir;
+  if (state.logsPage < 1) state.logsPage = 1;
+  if (state.logsPage > state.logsTotalPages) state.logsPage = state.logsTotalPages;
+  loadLogs();
+}
+
+function showLogDetail(index) {
+  var log = state.currentLogs[index];
+  if (!log) return;
+
+  var html = '<p><strong>User:</strong> ' + escHtml(log.user || '-') + '</p>' +
+    '<p><strong>Action:</strong> ' + escHtml(log.action || '-') + '</p>' +
+    '<p><strong>Time:</strong> ' + escHtml(log.loggedAt ? new Date(log.loggedAt).toLocaleString() : '-') + '</p>';
+
+  if (log.previousData || log.updatedData) {
+    html += '<table class="log-detail-table"><thead><tr><th>Previous Data</th><th>Updated Data</th></tr></thead><tbody><tr>';
+    html += '<td><pre class="log-detail-pre">' + escHtml(log.previousData ? JSON.stringify(log.previousData, null, 2) : '-') + '</pre></td>';
+    html += '<td><pre class="log-detail-pre">' + escHtml(log.updatedData ? JSON.stringify(log.updatedData, null, 2) : '-') + '</pre></td>';
+    html += '</tr></tbody></table>';
+  }
+
+  $('logDetailContent').innerHTML = html;
+  openModal('modalLogDetail');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
+checkSavedLogin();
+</script>
+
+</body>
+</html>
