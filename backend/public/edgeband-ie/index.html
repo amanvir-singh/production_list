@@ -875,7 +875,12 @@ function escHtml(str) {
 // ── XHR Wrapper ────────────────────────────────────────────────────────
 function xhr(method, url, data, callback) {
   var req = new XMLHttpRequest();
-  req.open(method, url, true);
+  // IE11 aggressively caches GET requests — bust with timestamp
+  var finalUrl = url;
+  if (method === 'GET') {
+    finalUrl += (url.indexOf('?') === -1 ? '?' : '&') + '_t=' + new Date().getTime();
+  }
+  req.open(method, finalUrl, true);
   req.setRequestHeader('Content-Type', 'application/json');
   if (state.user && state.user.token) {
     req.setRequestHeader('Authorization', 'Bearer ' + state.user.token);
@@ -1567,6 +1572,7 @@ function submitAddEdgeband() {
         $('addEbCode').value = '';
         $('addEbHeight').value = '';
         $('addEbThickness').value = '';
+        setTimeout(function() { switchTab('list'); }, 1000);
       } else {
         var msg = (resp && resp.message) ? resp.message : 'Failed to add.';
         $('addEbError').innerHTML = escHtml(msg);
@@ -1647,6 +1653,7 @@ function submitBulkAdd() {
           $('bulkSubmit').disabled = false;
           $('bulkReset').style.display = '';
           renderBulkResults(results);
+          loadInventory();
         }
       });
     })(codes[i], i);
@@ -1742,6 +1749,7 @@ function submitAddStock() {
       $('stockItem').value = '';
       $('stockLocation').value = '';
       $('stockQty').value = '';
+      setTimeout(function() { switchTab('list'); }, 1000);
     } else {
       var msg = (resp && resp.message) ? resp.message : 'Failed to add stock.';
       $('stockError').innerHTML = escHtml(msg);
